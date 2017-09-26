@@ -16,6 +16,13 @@
 *.dylib
 *.dll
 
+*.swp
+/TAGS
+/lib/opengl/*.so
+/lib/opengl/*.bundle
+/pkg
+/tmp
+
 # Fortran module files
 *.mod
 *.smod
