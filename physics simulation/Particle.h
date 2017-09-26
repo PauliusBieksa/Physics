@@ -6,4 +6,4 @@ class Particle :
 public:
 	Particle();
 	~Particle();
-};
+};
