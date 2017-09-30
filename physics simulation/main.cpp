@@ -33,15 +33,15 @@ GLfloat lastFrame = 0.0f;
 
 // Cosntants
 const glm::vec3 acc_g = glm::vec3(0.0f, -9.8f, 0.0f);
-const float bounce_damper = 0.95f;
+const float bounce_damper = 1.06f;
 // Constants describing blowdryers cone of effect
 const float blowConeRTop = 2.0f;
 const float blowConeRbot = 1.0f;
 const float blowConeHeight = 3.5f;
-const float blowMaxSpeed = 20.0f;
+const float blowMaxSpeed = 50.0f;
 
-int task = 4;
-bool debugParticle = true;
+int task = 3;
+bool debugParticles = false;
 
 
 
@@ -76,16 +76,22 @@ glm::vec3 windSpeed(glm::vec3 pos)
 	if (pos[1] < blowConeHeight)
 	{
 		// Pythagoras to find out where the wind is pointing to
-		float r_at_h = sqrtf((blowConeRTop - blowConeRbot) * (blowConeRTop - blowConeRbot) + pos[1] * pos[1]);
+		float r_at_h = (blowConeRTop - blowConeRbot) * pos[1] / blowConeHeight + blowConeRbot;
 		float posProjOnXZLength = sqrtf(pos[0] * pos[0] + pos[2] * pos[2]);
 		if (r_at_h <= posProjOnXZLength)
 			return glm::vec3();
-		glm::vec3 pointingTo = normalize(glm::vec3(pos[0], blowConeHeight, pos[2])) * (posProjOnXZLength / r_at_h);
+
+		glm::vec3 pointingTo;
+		if (pos[0] == 0.0f && pos[2] == 0)
+			pointingTo = glm::vec3(0.0f, blowConeHeight, 0.0f);
+		else
+			pointingTo = normalize(glm::vec3(pos[0], 0.0f, pos[2])) * blowConeRTop * (posProjOnXZLength / r_at_h);
+		pointingTo[1] = blowConeHeight;
 
 		glm::vec3 direction = normalize(pos - pointingTo);
 
-		windSpeedHere *= cosf(blowConeHeight / pos[1]);
-		windSpeedHere *= cosf(posProjOnXZLength / r_at_h);
+		windSpeedHere *= cosf(glm::pi<float>() / 2.0f * (blowConeHeight / pos[1]));
+		windSpeedHere *= cosf(glm::pi<float>() / 2.0f * (posProjOnXZLength / r_at_h));
 		direction *= windSpeedHere;
 		return direction;
 	}
@@ -130,8 +136,8 @@ int main()
 	particles.push_back(Particle());
 	particles[0].translate(glm::vec3(0.0f, 4.5f, 0.0f));
 	particles[0].getMesh().setShader(shader_particle);
-	//particles[0].setVel(glm::vec3(2.0f, 1.0f, 1.0f));
-	particles[0].setMass(0.015f);
+	particles[0].setVel(glm::vec3(4.0f, 1.0f, 1.0f));
+	particles[0].setMass(0.1f);
 
 
 	// Particles for demonstrating different integration methods
@@ -157,8 +163,10 @@ int main()
 	glm::vec3 f_drag = glm::vec3(0.0f, 0.0f, 0.0f);
 	glm::vec3 tmp = glm::vec3(0.0f, 0.0f, 0.0f);
 
-	Particle goingThere = Particle();
-	goingThere.getMesh().setShader(Shader("resources/shaders/core.vert", "resources/shaders/core_red.frag"));
+	Particle shadow = Particle();
+	shadow.getMesh().setShader(Shader("resources/shaders/core.vert", "resources/shaders/core_yellow.frag"));
+	Particle dragThere = Particle();
+	dragThere.getMesh().setShader(Shader("resources/shaders/core.vert", "resources/shaders/core_red.frag"));
 
 	// Time stuff
 	double time = 0.0;
@@ -201,7 +209,7 @@ int main()
 		// Timekeeping
 		double newTime = (double)glfwGetTime();
 		double frameTime = newTime - currentTime;
-		frameTime *= 0.2;////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//	frameTime *= 0.15;////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		if (frameTime > 0.25)
 			frameTime = 0.25;
 		currentTime = newTime;
@@ -246,8 +254,9 @@ int main()
 					currState[i] = p.getPos();
 					i++;
 
-					// Uses a red particle to show the velocity vector
-					goingThere.setPos(p.getPos() + p.getVel() / 10.0f);
+					// Uses a red particle to show the drag vector and a yellow particle to show an orthographic "shadow" on the floor
+					dragThere.setPos(p.getPos() + f_drag * 5.0f);
+					shadow.setPos(glm::vec3(p.getPos()[0], 0.0f, p.getPos()[2]));
 				}
 			}
 			else
@@ -307,7 +316,7 @@ int main()
 		**	INTERACTION
 		*/
 		// Manage interaction
-		app.doMovement(dt);
+		app.doMovement(timeAccumulator);
 
 
 		/*
@@ -324,8 +333,11 @@ int main()
 		else
 			for (Particle p : particles)
 				app.draw(p.getMesh());
-		if (debugParticle)
-			app.draw(goingThere.getMesh());
+		if (debugParticles)
+		{
+			app.draw(shadow.getMesh());
+			app.draw(dragThere.getMesh());
+		}
 
 		app.display();
 
