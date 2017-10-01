@@ -33,15 +33,15 @@ GLfloat lastFrame = 0.0f;
 
 // Cosntants
 const glm::vec3 acc_g = glm::vec3(0.0f, -9.8f, 0.0f);
-const float bounce_damper = 1.06f;
+const float bounce_damper = 0.96f;
 // Constants describing blowdryers cone of effect
 const float blowConeRTop = 2.0f;
 const float blowConeRbot = 1.0f;
 const float blowConeHeight = 3.5f;
-const float blowMaxSpeed = 50.0f;
+const float blowMaxSpeed = 100.0f;
 
-int task = 3;
-bool debugParticles = false;
+int task = 4;
+bool debugParticles = true;
 
 
 
@@ -88,9 +88,9 @@ glm::vec3 windSpeed(glm::vec3 pos)
 			pointingTo = normalize(glm::vec3(pos[0], 0.0f, pos[2])) * blowConeRTop * (posProjOnXZLength / r_at_h);
 		pointingTo[1] = blowConeHeight;
 
-		glm::vec3 direction = normalize(pos - pointingTo);
+		glm::vec3 direction = normalize(pointingTo - pos);
 
-		windSpeedHere *= cosf(glm::pi<float>() / 2.0f * (blowConeHeight / pos[1]));
+		windSpeedHere *= cosf(glm::pi<float>() / 2.0f * (blowConeHeight / (pos[1] == 0.0f) ? 0.00000001f : pos[1]));
 		windSpeedHere *= cosf(glm::pi<float>() / 2.0f * (posProjOnXZLength / r_at_h));
 		direction *= windSpeedHere;
 		return direction;
@@ -209,7 +209,6 @@ int main()
 		// Timekeeping
 		double newTime = (double)glfwGetTime();
 		double frameTime = newTime - currentTime;
-	//	frameTime *= 0.15;////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		if (frameTime > 0.25)
 			frameTime = 0.25;
 		currentTime = newTime;
@@ -316,7 +315,7 @@ int main()
 		**	INTERACTION
 		*/
 		// Manage interaction
-		app.doMovement(timeAccumulator);
+		app.doMovement(timeAccumulator * 2.0f);
 
 
 		/*
