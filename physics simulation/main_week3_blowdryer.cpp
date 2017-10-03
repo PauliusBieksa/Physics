@@ -40,7 +40,7 @@ const float blowConeRbot = 1.0f;
 const float blowConeHeight = 3.5f;
 const float blowMaxSpeed = 100.0f;
 
-int task = 3;
+int task = 4;
 bool debugParticles = true;
 
 
