@@ -16,7 +16,7 @@ glm::vec3 Force::apply(float mass, const glm::vec3 & pos, const glm::vec3 & vel)
 glm::vec3 Gravity::apply(float mass, const glm::vec3 & pos, const glm::vec3 & vel)
 {
 	// complete . Should return the acceleration resulting from gravity
-	return glm::vec3(0.0f, 9.8f, 0.0f);
+	return glm::vec3(0.0f, -9.8f, 0.0f);
 }
 
 /*

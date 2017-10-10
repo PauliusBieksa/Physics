@@ -60,6 +60,9 @@ void scale(const glm::vec3 & vect);
 
 glm::vec3 applyForces(glm::vec3 pos, glm::vec3 vel);
 
+std::vector<Force*> getForces() { return m_forces; }
+void addForce(Force *f) { m_forces.push_back(f); }
+
  private:
 	 Mesh m_mesh; // mesh used to represent the body
 
@@ -71,7 +74,4 @@ glm::vec3 applyForces(glm::vec3 pos, glm::vec3 vel);
 	 glm::vec3 m_pos; // position
 
 	 std::vector<Force*> m_forces;
-
-	 std::vector<Force*> getForces() { return m_forces; }
-	 void addForce(Force *f) { m_forces.push_back(f); }
  };
