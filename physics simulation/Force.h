@@ -43,4 +43,7 @@ private:
 class Drag : public Force
 {
 public:
-	Drag() {}	glm::vec3 apply(float mass, const glm::vec3 & pos, const glm::vec3 & vel);private:};
+	Drag() {}
+	glm::vec3 apply(float mass, const glm::vec3 & pos, const glm::vec3 & vel);
+private:
+};
