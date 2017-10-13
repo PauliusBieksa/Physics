@@ -31,11 +31,22 @@
 GLfloat deltaTime = 0.0f;
 GLfloat lastFrame = 0.0f;
 
+// Struckt for storing spring values
+struct spring
+{
+	float ks;
+	float kd;
+	float rest;
+};
+
+
+
 // Cosntants
+const int task = 3;
 const glm::vec3 acc_g = glm::vec3(0.0f, -9.8f, 0.0f);
 const float bounce_damper = 0.96f;
-
-
+// values for stiffnes, damper, rest distance
+const spring sp = { 15.0f, 1.0f, 0.3f };
 
 
 
@@ -43,10 +54,7 @@ const float bounce_damper = 0.96f;
 // Integrate using semi-implicit Euler integration
 void integrate(Particle &p, float dt)
 {
-	//	p.setAcc(p.applyForces(p.getPos(), p.getVel()));
 	p.setVel(p.getVel() + p.getAcc() * dt);
-	//	if (length(p.getVel()) < 0.005f)
-	//		p.setVel(glm::vec3(0.0f, 0.0f, 0.0f));
 	p.translate(p.getVel() * dt);
 }
 
@@ -73,97 +81,101 @@ int main()
 	Shader shader_particle = Shader("resources/shaders/core.vert", "resources/shaders/core_blue.frag");
 	Shader shader_yellow = Shader("resources/shaders/core.vert", "resources/shaders/core_yellow.frag");
 
-	//std::vector<Particle> anchors;
-	//for (int i = 0; i < 4; i++)
-	//{
-	//	anchors.push_back(Particle());
-	//	anchors[i].getMesh().setShader(shader_yellow);
-	//	anchors[i].setPos(glm::vec3(-2.5f * powf(-1.0f, (float)i), 4.5f, i > 1 ? 2.5f : -2.5f));
-	//}
-
-	////Particle debug = Particle();
-	////debug.setPos(glm::vec3(0.0f, 4.5f, 0.0f));
-	////debug.getMesh().setShader(Shader("resources/shaders/core.vert", "resources/shaders/core_red.frag"));
-
-	//// Set particle parameters
-	//for (int i = 0; i < 8; i++)
-	//{
-	//	particles.push_back(Particle());
-	//	particles[i].translate(glm::vec3(-2.0f + (float)i / 2.0f, 4.5f, 0.0f));
-	//	particles[i].getMesh().setShader(shader_particle);
-	//	particles[i].setMass(0.1f);
-	//	particles[i].addForce(new Gravity());
-	//	particles[i].addForce(new Drag());
-	//}
-
-	for (int i = 0; i < 10; i++)
+	// Task 1
+	if (task == 1)
 	{
-		for (int j = 0; j < 10; j++)
+		// Adding particles
+		for (int i = 0; i < 5; i++)
 		{
 			particles.push_back(Particle());
-			particles[i * 10 + j].translate(glm::vec3(-2.5f + (float)i / 2.0f, 4.5f, 2.5f - (float)j / 2.0f));
-			if ((i == 0 && j == 0) || (i == 9 && j == 0) || (i == 0 && j == 9) || (i == 9 && j == 9))
+			particles[i].translate(glm::vec3(0.0f + (float)i / 2.0f, 4.5f, 0.0f));
+			if (i == 0)
+				particles[i].getMesh().setShader(shader_yellow);
+			else
 			{
-				particles[i * 10 + j].getMesh().setShader(shader_yellow);
-				continue;
+				particles[i].getMesh().setShader(shader_particle);
+				particles[i].setMass(0.1f);
+				particles[i].addForce(new Gravity());
+				particles[i].addForce(new Drag());
 			}
-			particles[i * 10 + j].getMesh().setShader(shader_particle);
-			particles[i * 10 + j].setMass(0.1f);
-			particles[i * 10 + j].addForce(new Gravity());
-			particles[i * 10 + j].addForce(new Drag());
+		}
+		// Adding springs
+		particles[1].addForce(new Hooke(&particles[0], sp.ks, sp.kd, sp.rest));
+		for (int i = 1; i < particles.size() - 1; i++)
+		{
+			particles[i].addForce(new Hooke(&particles[i + 1], sp.ks, sp.kd, sp.rest));
+			particles[i + 1].addForce(new Hooke(&particles[i], sp.ks, sp.kd, sp.rest));
 		}
 	}
 
-	/*particles[0].addForce(new Hooke(&anchors[0], 5.0f, 1.5f, 1.0f));
-	particles[7].addForce(new Hooke(&anchors[1], 5.0f, 1.5f, 1.0f));*/
-
-	/*for (int i = 0; i < particles.size() - 1; i++)
+	// Tasks 2 and 3
+	if (task == 2 || task == 3)
 	{
-		particles[i].addForce(new Hooke(&particles[i + 1], 5.0f, 1.0f, 1.0f));
-		particles[i + 1].addForce(new Hooke(&particles[i], 5.0f, 1.0f, 1.0f));
-	}*/
-	for (int i = 0; i < 10; i++)
-	{
-		for (int j = 0; j < 10; j++)
+		// Adding particles
+		for (int i = 0; i < 10; i++)
 		{
-			if (i == 0)
-			{
-				if (j == 0 || j == 9)
-					continue;
-				particles[i * 10 + j].addForce(new Hooke(&particles[i * 10 + j - 1], 15.0f, 1.0f, 0.3f));
-				particles[i * 10 + j].addForce(new Hooke(&particles[i * 10 + j + 1], 15.0f, 1.0f, 0.3f));
-				particles[i * 10 + j].addForce(new Hooke(&particles[(i + 1) * 10 + j], 15.0f, 1.0f, 0.3f));
-			}
-			else if (i == 9)
-			{
-				if (j == 0 || j == 9)
-					continue;
-				particles[i * 10 + j].addForce(new Hooke(&particles[i * 10 + j - 1], 15.0f, 1.0f, 0.3f));
-				particles[i * 10 + j].addForce(new Hooke(&particles[i * 10 + j + 1], 15.0f, 1.0f, 0.3f));
-				particles[i * 10 + j].addForce(new Hooke(&particles[(i - 1) * 10 + j], 15.0f, 1.0f, 0.3f));
-			}
-			else if (j == 0)
-			{
-				if (i == 0 || i == 9)
-					continue;
-				particles[i * 10 + j].addForce(new Hooke(&particles[i * 10 + j + 1], 15.0f, 1.0f, 0.3f));
-				particles[i * 10 + j].addForce(new Hooke(&particles[(i + 1) * 10 + j], 15.0f, 1.0f, 0.3f));
-				particles[i * 10 + j].addForce(new Hooke(&particles[(i - 1) * 10 + j], 15.0f, 1.0f, 0.3f));
-			}
-			else if (j == 9)
-			{
-				if (i == 0 || i == 9)
-					continue;
-				particles[i * 10 + j].addForce(new Hooke(&particles[i * 10 + j - 1], 15.0f, 1.0f, 0.3f));
-				particles[i * 10 + j].addForce(new Hooke(&particles[(i + 1) * 10 + j], 15.0f, 1.0f, 0.3f));
-				particles[i * 10 + j].addForce(new Hooke(&particles[(i - 1) * 10 + j], 15.0f, 1.0f, 0.3f));
-			}
+			particles.push_back(Particle());
+			if (task == 2)
+				particles[i].translate(glm::vec3(-2.5f + (float)i / 2.0f, 4.5f, 0.0f));
+			else if (task == 3)
+				particles[i].translate(glm::vec3(-2.5f + (float)i / 2.0f, 1.0f, 0.0f));
+			if (i == 0 || i == 9)
+				particles[i].getMesh().setShader(shader_yellow);
 			else
 			{
-				particles[i * 10 + j].addForce(new Hooke(&particles[i * 10 + j - 1], 15.0f, 1.0f, 0.3f));
-				particles[i * 10 + j].addForce(new Hooke(&particles[i * 10 + j + 1], 15.0f, 1.0f, 0.3f));
-				particles[i * 10 + j].addForce(new Hooke(&particles[(i + 1) * 10 + j], 15.0f, 1.0f, 0.3f));
-				particles[i * 10 + j].addForce(new Hooke(&particles[(i - 1) * 10 + j], 15.0f, 1.0f, 0.3f));
+				particles[i].getMesh().setShader(shader_particle);
+				particles[i].setMass(0.1f);
+				particles[i].addForce(new Gravity());
+				particles[i].addForce(new Drag());
+			}
+		}
+		// Adding springs
+		particles[1].addForce(new Hooke(&particles[0], sp.ks, sp.kd, sp.rest));
+		particles[8].addForce(new Hooke(&particles[9], sp.ks, sp.kd, sp.rest));
+		for (int i = 1; i < particles.size() - 2; i++)
+		{
+			particles[i].addForce(new Hooke(&particles[i + 1], sp.ks, sp.kd, sp.rest));
+			particles[i + 1].addForce(new Hooke(&particles[i], sp.ks, sp.kd, sp.rest));
+		}
+	}
+
+	// task 4
+	if (task == 4)
+	{
+		// Adding particles
+		for (int i = 0; i < 10; i++)
+		{
+			for (int j = 0; j < 10; j++)
+			{
+				particles.push_back(Particle());
+				particles[i * 10 + j].translate(glm::vec3(-2.5f + (float)i / 2.0f, 4.5f, 2.5f - (float)j / 2.0f));
+				if ((i == 0 && j == 0) || (i == 9 && j == 0) || (i == 0 && j == 9) || (i == 9 && j == 9))
+				{
+					particles[i * 10 + j].getMesh().setShader(shader_yellow);
+					continue;
+				}
+				particles[i * 10 + j].getMesh().setShader(shader_particle);
+				particles[i * 10 + j].setMass(0.1f);
+				particles[i * 10 + j].addForce(new Gravity());
+				particles[i * 10 + j].addForce(new Drag());
+			}
+		}
+		// Adding springs
+		for (int i = 0; i < 10; i++)
+		{
+			for (int j = 0; j < 10; j++)
+			{
+				if ((i == 0 && j == 0) || (i == 9 && j == 0) || (i == 0 && j == 9) || (i == 9 && j == 9))
+					continue;
+
+				if (i > 0)
+					particles[i * 10 + j].addForce(new Hooke(&particles[(i - 1) * 10 + j], sp.ks, sp.kd, sp.rest));
+				if (i < 9)
+					particles[i * 10 + j].addForce(new Hooke(&particles[(i + 1) * 10 + j], sp.ks, sp.kd, sp.rest));
+				if (j > 0)
+					particles[i * 10 + j].addForce(new Hooke(&particles[i * 10 + j - 1], sp.ks, sp.kd, sp.rest));
+				if (j < 9)
+					particles[i * 10 + j].addForce(new Hooke(&particles[i * 10 + j + 1], sp.ks, sp.kd, sp.rest));
 			}
 		}
 	}
@@ -179,7 +191,6 @@ int main()
 
 	// Time stuff
 	double time = 0.0;
-	//double dt = 1.0 / 60.0;
 	double dt = 0.01;
 	double currentTime = (double)glfwGetTime();
 	double timeAccumulator = 0.0;
@@ -223,7 +234,6 @@ int main()
 			for (Particle &p : particles)
 			{
 				integrate(p, dt);
-				//debug.setPos(p.getPos() + p.m_forces[2]->apply(p.getMass(), p.getPos(), p.getVel()));
 
 				// Collision detection
 				for (int i = 0; i < 3; i++)
@@ -273,7 +283,6 @@ int main()
 		// draw particles
 		for (Particle p : particles)
 			app.draw(p.getMesh());
-		//	app.draw(debug.getMesh());
 
 		app.display();
 
