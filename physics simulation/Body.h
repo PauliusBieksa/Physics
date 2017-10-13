@@ -8,6 +8,7 @@
 class Body
 {
 public:
+
 /*
 ** GET METHODS
  */
@@ -68,10 +69,11 @@ void addForce(Force *f) { m_forces.push_back(f); }
 
 	 float m_mass; // mass
 	 float m_cor; // coefficient of restitution
+	 std::vector<Force*> m_forces;
 
 	 glm::vec3 m_acc; // acceleration
 	 glm::vec3 m_vel; // velocity
 	 glm::vec3 m_pos; // position
 
-	 std::vector<Force*> m_forces;
+//	 std::vector<Force*> m_forces;
  };

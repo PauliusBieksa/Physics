@@ -35,5 +35,5 @@ glm::vec3 Body::applyForces(glm::vec3 pos, glm::vec3 vel)
 	{
 		fAccumulator += f->apply(getMass(), pos, vel);
 	}
-	return fAccumulator;
+	return fAccumulator / m_mass;
 }
