@@ -1,6 +1,7 @@
 #pragma once
 #include <glm/glm.hpp>
 #include <iostream>
+#include <random>
 
 class Body; // forward declaration to avoid circular dependencies
 
@@ -57,7 +58,7 @@ public:
 		m_ks = ks; m_kd = kd; m_rest = rest; m_attachedTo = attachedTo;
 	}
 	/*Hooke(Body * b1, Body * b2, float ks, float kd, float rest) {
-		m_ks = ks; m_kd = kd; m_rest = rest; m_b1 = b1; m_b2 = b2;
+	m_ks = ks; m_kd = kd; m_rest = rest; m_b1 = b1; m_b2 = b2;
 	}*/
 
 	// get and set methods
@@ -72,8 +73,31 @@ private:
 	float m_rest; // spring rest length
 
 	Body * m_attachedTo; // pointer to the body connected to one extremity of the spring
-//	Body * m_b1; // pointer to the body connected to one extremity of the spring
-//	Body * m_b2; // pointer to the body connected to the other extremity
+						 //	Body * m_b1; // pointer to the body connected to one extremity of the spring
+						 //	Body * m_b2; // pointer to the body connected to the other extremity
+
+};
+
+
+class SurfaceDrag : public Force
+{
+public:
+	SurfaceDrag() {}
+	SurfaceDrag(std::vector<Body*> attachedTo, Body * self) {
+		m_attachedTo = attachedTo; m_self = self;
+	}
+
+
+	// get and set methods
+	// you can write these yourself as necessary
+
+	// physics
+	glm::vec3 apply(float mass, const glm::vec3 & pos, const glm::vec3 & vel);
+
+private:
+
+	Body * m_self; // pointer the particle the force is applied to
+	std::vector<Body*> m_attachedTo; // pointer to other particles attached to this one
 
 };
 

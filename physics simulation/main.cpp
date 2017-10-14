@@ -41,12 +41,11 @@ struct spring
 
 
 
-// Cosntants
-const int task = 3;
+// Constants
+const int task = 5;
 const glm::vec3 acc_g = glm::vec3(0.0f, -9.8f, 0.0f);
 const float bounce_damper = 0.96f;
-// values for stiffnes, damper, rest distance
-const spring sp = { 15.0f, 1.0f, 0.3f };
+const spring sp = { 15.0f, 1.0f, 0.3f };	// values for stiffnes, damper, rest distance
 
 
 
@@ -148,7 +147,7 @@ int main()
 			for (int j = 0; j < 10; j++)
 			{
 				particles.push_back(Particle());
-				particles[i * 10 + j].translate(glm::vec3(-2.5f + (float)i / 2.0f, 4.5f, 2.5f - (float)j / 2.0f));
+				particles[i * 10 + j].translate(glm::vec3(-2.5f + (float)i / 2.0f, 2.5f, 2.5f - (float)j / 2.0f));
 				if ((i == 0 && j == 0) || (i == 9 && j == 0) || (i == 0 && j == 9) || (i == 9 && j == 9))
 				{
 					particles[i * 10 + j].getMesh().setShader(shader_yellow);
@@ -176,6 +175,56 @@ int main()
 					particles[i * 10 + j].addForce(new Hooke(&particles[i * 10 + j - 1], sp.ks, sp.kd, sp.rest));
 				if (j < 9)
 					particles[i * 10 + j].addForce(new Hooke(&particles[i * 10 + j + 1], sp.ks, sp.kd, sp.rest));
+			}
+		}
+	}
+
+	// Task 5
+	if (task == 5)
+	{
+		// Adding particles
+		for (int i = 0; i < 10; i++)
+		{
+			for (int j = 0; j < 10; j++)
+			{
+				particles.push_back(Particle());
+				particles[i * 10 + j].translate(glm::vec3(-2.5f + (float)i / 2.0f, 10.0f - (float)j / 2.0f, 0.0f));
+				if ((i == 0 && j == 0) || (i == 9 && j == 0))
+				{
+					particles[i * 10 + j].getMesh().setShader(shader_yellow);
+					continue;
+				}
+				particles[i * 10 + j].getMesh().setShader(shader_particle);
+				particles[i * 10 + j].setMass(0.1f);
+				particles[i * 10 + j].addForce(new Gravity());
+				particles[i * 10 + j].addForce(new Drag());
+			}
+		}
+		// Adding springs and surface drag
+		for (int i = 0; i < 10; i++)
+		{
+			for (int j = 0; j < 10; j++)
+			{
+				if ((i == 0 && j == 0) || (i == 9 && j == 0))
+					continue;
+
+				if (i > 0)
+				{
+					particles[i * 10 + j].addForce(new Hooke(&particles[(i - 1) * 10 + j], sp.ks, sp.kd, sp.rest));
+					particles[i * 10 + j].addForce(new SurfaceDrag(&particles[(i - 1) * 10 + j], &particles[i * 10 + j]));
+				}
+				if (i < 9)
+				{
+					particles[i * 10 + j].addForce(new Hooke(&particles[(i + 1) * 10 + j], sp.ks, sp.kd, sp.rest));
+				}
+				if (j > 0)
+				{
+					particles[i * 10 + j].addForce(new Hooke(&particles[i * 10 + j - 1], sp.ks, sp.kd, sp.rest));
+				}
+				if (j < 9)
+				{
+					particles[i * 10 + j].addForce(new Hooke(&particles[i * 10 + j + 1], sp.ks, sp.kd, sp.rest));
+				}
 			}
 		}
 	}
