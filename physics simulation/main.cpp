@@ -49,6 +49,10 @@ const spring sp = { 15.0f, 1.0f, 0.3f };	// values for stiffnes, damper, rest di
 
 
 
+glm::vec3 * wind;
+
+
+
 
 // Integrate using semi-implicit Euler integration
 void integrate(Particle &p, float dt)
@@ -182,6 +186,7 @@ int main()
 	// Task 5
 	if (task == 5)
 	{
+		wind = new glm::vec3(0.0f, 0.0f, 1.0f);
 		// Adding particles
 		for (int i = 0; i < 10; i++)
 		{
@@ -197,7 +202,6 @@ int main()
 				particles[i * 10 + j].getMesh().setShader(shader_particle);
 				particles[i * 10 + j].setMass(0.1f);
 				particles[i * 10 + j].addForce(new Gravity());
-				particles[i * 10 + j].addForce(new Drag());
 			}
 		}
 		// Adding springs and surface drag
@@ -205,26 +209,31 @@ int main()
 		{
 			for (int j = 0; j < 10; j++)
 			{
+				std::vector<Body*> surfaceConnections;
 				if ((i == 0 && j == 0) || (i == 9 && j == 0))
 					continue;
 
 				if (i > 0)
 				{
 					particles[i * 10 + j].addForce(new Hooke(&particles[(i - 1) * 10 + j], sp.ks, sp.kd, sp.rest));
-					particles[i * 10 + j].addForce(new SurfaceDrag(&particles[(i - 1) * 10 + j], &particles[i * 10 + j]));
-				}
-				if (i < 9)
-				{
-					particles[i * 10 + j].addForce(new Hooke(&particles[(i + 1) * 10 + j], sp.ks, sp.kd, sp.rest));
+					surfaceConnections.push_back(&particles[(i - 1) * 10 + j]);
 				}
 				if (j > 0)
 				{
 					particles[i * 10 + j].addForce(new Hooke(&particles[i * 10 + j - 1], sp.ks, sp.kd, sp.rest));
+					surfaceConnections.push_back(&particles[i * 10 + j - 1]);
+				}
+				if (i < 9)
+				{
+					particles[i * 10 + j].addForce(new Hooke(&particles[(i + 1) * 10 + j], sp.ks, sp.kd, sp.rest));
+					surfaceConnections.push_back(&particles[(i + 1) * 10 + j]);
 				}
 				if (j < 9)
 				{
 					particles[i * 10 + j].addForce(new Hooke(&particles[i * 10 + j + 1], sp.ks, sp.kd, sp.rest));
+					surfaceConnections.push_back(&particles[i * 10 + j + 1]);
 				}
+				particles[i * 10 + j].addForce(new SurfaceDrag(surfaceConnections, wind));
 			}
 		}
 	}

@@ -1,7 +1,7 @@
 #pragma once
 #include <glm/glm.hpp>
 #include <iostream>
-#include <random>
+#include <vector>
 
 class Body; // forward declaration to avoid circular dependencies
 
@@ -83,8 +83,8 @@ class SurfaceDrag : public Force
 {
 public:
 	SurfaceDrag() {}
-	SurfaceDrag(std::vector<Body*> attachedTo, Body * self) {
-		m_attachedTo = attachedTo; m_self = self;
+	SurfaceDrag(std::vector<Body*> attachedTo, glm::vec3 * wind) {
+		m_attachedTo = attachedTo; m_wind = wind;
 	}
 
 
@@ -96,7 +96,8 @@ public:
 
 private:
 
-	Body * m_self; // pointer the particle the force is applied to
+	//Body * m_self; // pointer the particle the force is applied to
+	glm::vec3 * m_wind;
 	std::vector<Body*> m_attachedTo; // pointer to other particles attached to this one
 
 };
