@@ -63,6 +63,7 @@ glm::vec3 applyForces(glm::vec3 pos, glm::vec3 vel);
 
 std::vector<Force*> getForces() { return m_forces; }
 void addForce(Force *f) { m_forces.push_back(f); }
+bool isStatic = false;
 
  private:
 	 Mesh m_mesh; // mesh used to represent the body

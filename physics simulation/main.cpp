@@ -184,16 +184,16 @@ int main()
 	}
 
 	// Task 5
+	wind = new glm::vec3(0.0f, 0.0f, 5.5f);
 	if (task == 5)
 	{
-		wind = new glm::vec3(0.0f, 0.0f, 1.0f);
 		// Adding particles
 		for (int i = 0; i < 10; i++)
 		{
 			for (int j = 0; j < 10; j++)
 			{
 				particles.push_back(Particle());
-				particles[i * 10 + j].translate(glm::vec3(-2.5f + (float)i / 2.0f, 10.0f - (float)j / 2.0f, 0.0f));
+				particles[i * 10 + j].translate(glm::vec3(-2.5f + (float)i / 2.0f, 7.0f - (float)j / 2.0f, 0.0f));
 				if ((i == 0 && j == 0) || (i == 9 && j == 0))
 				{
 					particles[i * 10 + j].getMesh().setShader(shader_yellow);
@@ -209,31 +209,34 @@ int main()
 		{
 			for (int j = 0; j < 10; j++)
 			{
-				std::vector<Body*> surfaceConnections;
-				if ((i == 0 && j == 0) || (i == 9 && j == 0))
-					continue;
+				// Adding surface drag
+				if (i < 9 && j < 9)
+				{
+					Force *f1 = new SurfaceDrag(&particles[i * 10 + j], &particles[(i + 1) * 10 + j], &particles[(i + 1) * 10 + j + 1], wind);
+					Force *f2 = new SurfaceDrag(&particles[i * 10 + j], &particles[(i + 1) * 10 + j + 1], &particles[i * 10 + j + 1], wind);
+					particles[i * 10 + j].addForce(f1);
+					particles[(i + 1) * 10 + j].addForce(f1);
+					particles[(i + 1) * 10 + j + 1].addForce(f1);
+					particles[i * 10 + j].addForce(f2);
+					particles[(i + 1) * 10 + j + 1].addForce(f2);
+					particles[i * 10 + j + 1].addForce(f2);
+				}
 
+				if ((i == 0 && j == 0) || (i == 9 && j == 0))
+				{
+					particles[i * 10 + j].isStatic = true;
+					continue;
+				}
+
+				// Adding springs
 				if (i > 0)
-				{
 					particles[i * 10 + j].addForce(new Hooke(&particles[(i - 1) * 10 + j], sp.ks, sp.kd, sp.rest));
-					surfaceConnections.push_back(&particles[(i - 1) * 10 + j]);
-				}
 				if (j > 0)
-				{
 					particles[i * 10 + j].addForce(new Hooke(&particles[i * 10 + j - 1], sp.ks, sp.kd, sp.rest));
-					surfaceConnections.push_back(&particles[i * 10 + j - 1]);
-				}
 				if (i < 9)
-				{
 					particles[i * 10 + j].addForce(new Hooke(&particles[(i + 1) * 10 + j], sp.ks, sp.kd, sp.rest));
-					surfaceConnections.push_back(&particles[(i + 1) * 10 + j]);
-				}
 				if (j < 9)
-				{
 					particles[i * 10 + j].addForce(new Hooke(&particles[i * 10 + j + 1], sp.ks, sp.kd, sp.rest));
-					surfaceConnections.push_back(&particles[i * 10 + j + 1]);
-				}
-				particles[i * 10 + j].addForce(new SurfaceDrag(surfaceConnections, wind));
 			}
 		}
 	}
@@ -262,6 +265,7 @@ int main()
 	for (Particle &p : particles)
 		currState.push_back(p.getPos());
 
+	float timeFromStart = 0.0f;
 	// Game loop
 	while (!glfwWindowShouldClose(app.getWindow()))
 	{
@@ -272,21 +276,28 @@ int main()
 		// Timekeeping
 		double newTime = (double)glfwGetTime();
 		double frameTime = newTime - currentTime;
-		//frameTime *= 0.25f;	////////////////////////
+		//frameTime *= 0.25f;	////////////////////////////////////////////////////////////////////////
 		if (frameTime > 0.25)
 			frameTime = 0.25;
 		currentTime = newTime;
 		timeAccumulator += frameTime;
 
+		timeFromStart += frameTime;
+
 		// Do fiexed updates while time available
 		while (timeAccumulator >= dt)
 		{
+			*wind = glm::vec3(glm::sin(timeFromStart / 5.0f) * 6.0f, 0.0f, glm::cos(timeFromStart / 5.0f) * 6.0f);
 			for (int i = 0; i < prevState.size(); i++)
 				prevState[i] = particles[i].getPos();
 
 			// Apply all forces before integrating
 			for (Particle &p : particles)
+			{
+				if (p.isStatic)
+					continue;
 				p.setAcc(p.applyForces(p.getPos(), p.getVel()));
+			}
 
 			int i = 0;
 			for (Particle &p : particles)

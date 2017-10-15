@@ -41,7 +41,8 @@ glm::vec3 Hooke::apply(float mass, const glm::vec3 & pos, const glm::vec3 & vel)
 	glm::vec3 e = toAttached / l;
 	float v1 = glm::dot(vel, e);
 	float v2 = glm::dot(m_attachedTo->getVel(), e);
-	return (m_ks * (l - m_rest) - m_kd * (v1 - v2)) * e;
+	glm::vec3 fh = (m_ks * (l - m_rest) - m_kd * (v1 - v2)) * e;
+	return fh;
 }
 
 
@@ -50,43 +51,32 @@ glm::vec3 SurfaceDrag::apply(float mass, const glm::vec3 & pos, const glm::vec3 
 {
 	float ro = 1.2f;
 	float cd = 1.5f;
-	std::vector<glm::vec3> a0v;
-	std::vector<glm::vec3> vs;
-	std::vector<glm::vec3> n;
-	switch (m_attachedTo.size())
-	{
-	case 2:
-		a0v.push_back(glm::cross(m_attachedTo[0]->getPos() - pos, m_attachedTo[1]->getPos() - pos) * 0.5f);
-		vs.push_back((vel + m_attachedTo[0]->getVel() + m_attachedTo[1]->getVel()) / 3.0f - *m_wind);
-		break;
-	case 3:
-		a0v.push_back(glm::cross(m_attachedTo[0]->getPos() - pos, m_attachedTo[1]->getPos() - pos) * 0.5f);
-		a0v.push_back(glm::cross(m_attachedTo[1]->getPos() - pos, m_attachedTo[2]->getPos() - pos) * 0.5f);
-		vs.push_back((vel + m_attachedTo[0]->getVel() + m_attachedTo[1]->getVel()) / 3.0f - *m_wind);
-		vs.push_back((vel + m_attachedTo[1]->getVel() + m_attachedTo[2]->getVel()) / 3.0f - *m_wind);
-		break;
-	case 4:
-		a0v.push_back(glm::cross(m_attachedTo[0]->getPos() - pos, m_attachedTo[1]->getPos() - pos) * 0.5f);
-		a0v.push_back(glm::cross(m_attachedTo[1]->getPos() - pos, m_attachedTo[2]->getPos() - pos) * 0.5f);
-		a0v.push_back(glm::cross(m_attachedTo[2]->getPos() - pos, m_attachedTo[3]->getPos() - pos) * 0.5f);
-		a0v.push_back(glm::cross(m_attachedTo[3]->getPos() - pos, m_attachedTo[0]->getPos() - pos) * 0.5f);
-		vs.push_back((vel + m_attachedTo[0]->getVel() + m_attachedTo[1]->getVel()) / 3.0f - *m_wind);
-		vs.push_back((vel + m_attachedTo[1]->getVel() + m_attachedTo[2]->getVel()) / 3.0f - *m_wind);
-		vs.push_back((vel + m_attachedTo[2]->getVel() + m_attachedTo[3]->getVel()) / 3.0f - *m_wind);
-		vs.push_back((vel + m_attachedTo[3]->getVel() + m_attachedTo[0]->getVel()) / 3.0f - *m_wind);
-		break;
-	default:
-		return glm::vec3(0.0f);
-	}
-	for (int i = 0; i < a0v.size(); i++)
-		if (glm::length(a0v[i]) == 0)
-			n.push_back(glm::vec3(0.0f));
-		else
-			n.push_back(a0v[i] / glm::length(a0v[i]));
+	glm::vec3 a0v;
+	glm::vec3 v;
+	glm::vec3 n;
 
-	glm::vec3 f;
-	for (int i = 0; i < a0v.size(); i++)
-		if (glm::length(vs[i]) != 0.0f)
-			f += n[i] * 0.5f * ro * glm::length2(vs[i]) * cd * glm::length(a0v[i]) * glm::dot(n[i], vs[i] / glm::length(vs[i]) / 3.0f);
-	return f / (float)a0v.size();
+	if (m_iteration == 0)
+	{
+		// Calculates the surface drag
+		m_iteration++;
+		a0v = glm::cross(m_b2->getPos() - m_b1->getPos(), m_b3->getPos() - m_b1->getPos()) / 2.0f;
+		v = (m_b1->getVel() + m_b2->getVel() + m_b3->getVel()) / 3.0f + *m_wind;
+		if (glm::length2(a0v) == 0.0f || glm::length2(v) == 0.0f)
+		{
+			m_f = glm::vec3(0.0f);
+			return m_f;
+		}
+		n = a0v / glm::length(a0v);
+		m_f = -0.5f * ro * glm::length2(v) * cd * glm::length(a0v) * glm::dot(v, n) / glm::length(v) * n;
+		return m_f;
+	}
+	else
+	{
+		// Returns the already calculated force
+		if (m_iteration < 2)
+			m_iteration++;
+		else
+			m_iteration = 0;
+		return m_f;
+	}
 }

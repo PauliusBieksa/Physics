@@ -35,5 +35,9 @@ glm::vec3 Body::applyForces(glm::vec3 pos, glm::vec3 vel)
 	{
 		fAccumulator += f->apply(getMass(), pos, vel);
 	}
-	return fAccumulator / m_mass;
+	glm::vec3 acc = fAccumulator / m_mass;
+	// Safeguard against unresonable accelerations
+	if (glm::length(acc) > 100.0f)
+		return acc / glm::length(acc) * 100.0f;
+	return acc;
 }

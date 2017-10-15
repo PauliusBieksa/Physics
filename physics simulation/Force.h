@@ -57,9 +57,6 @@ public:
 	Hooke(Body * attachedTo, float ks, float kd, float rest) {
 		m_ks = ks; m_kd = kd; m_rest = rest; m_attachedTo = attachedTo;
 	}
-	/*Hooke(Body * b1, Body * b2, float ks, float kd, float rest) {
-	m_ks = ks; m_kd = kd; m_rest = rest; m_b1 = b1; m_b2 = b2;
-	}*/
 
 	// get and set methods
 	// you can write these yourself as necessary
@@ -73,8 +70,6 @@ private:
 	float m_rest; // spring rest length
 
 	Body * m_attachedTo; // pointer to the body connected to one extremity of the spring
-						 //	Body * m_b1; // pointer to the body connected to one extremity of the spring
-						 //	Body * m_b2; // pointer to the body connected to the other extremity
 
 };
 
@@ -82,11 +77,10 @@ private:
 class SurfaceDrag : public Force
 {
 public:
-	SurfaceDrag() {}
-	SurfaceDrag(std::vector<Body*> attachedTo, glm::vec3 * wind) {
-		m_attachedTo = attachedTo; m_wind = wind;
+	SurfaceDrag() { m_iteration = 0; }
+	SurfaceDrag(Body * b1, Body * b2, Body * b3, glm::vec3 * wind) {
+		m_b1 = b1; m_b2 = b2; m_b3 = b3; m_wind = wind; m_iteration = 0;
 	}
-
 
 	// get and set methods
 	// you can write these yourself as necessary
@@ -99,6 +93,10 @@ private:
 	//Body * m_self; // pointer the particle the force is applied to
 	glm::vec3 * m_wind;
 	std::vector<Body*> m_attachedTo; // pointer to other particles attached to this one
-
+	Body * m_b1;	// Pointer to the first particle on a triangle
+	Body * m_b2;	// Pointer to the second particle on a triangle
+	Body * m_b3;	// Pointer to the third particle on a triangle
+	glm::vec3 m_f;	// A force that is saved once and used by other vertices later
+	int m_iteration;	// Used to check whether the force is alredy calculated for this triangle
 };
 
