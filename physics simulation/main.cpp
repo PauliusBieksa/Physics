@@ -276,7 +276,7 @@ int main()
 		// Timekeeping
 		double newTime = (double)glfwGetTime();
 		double frameTime = newTime - currentTime;
-		//frameTime *= 0.25f;	////////////////////////////////////////////////////////////////////////
+		//frameTime *= 1.25f;	////////////////////////////////////////////////////////////////////////
 		if (frameTime > 0.25)
 			frameTime = 0.25;
 		currentTime = newTime;
