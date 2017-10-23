@@ -1,5 +1,5 @@
 #pragma once
-# include "Body.h"
+#include "Body.h"
 
 class RigidBody :
 	public Body
@@ -14,7 +14,7 @@ public:
 	void setInvInertia(const glm::mat3 & invInertia) { m_invInertia = invInertia; }
 
 	glm::vec3 getAngVel() { return m_angVel; }
-	glm::vec3 getAngAcc() { return m_angAccl; }
+	glm::vec3 getAngAcc() { return m_angAcc; }
 	glm::mat3 getInvInertia() { return m_invInertia; }
 	void scale(glm::vec3 vect);
 

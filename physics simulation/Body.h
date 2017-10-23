@@ -75,6 +75,4 @@ bool isStatic = false;
 	 glm::vec3 m_acc; // acceleration
 	 glm::vec3 m_vel; // velocity
 	 glm::vec3 m_pos; // position
-
-//	 std::vector<Force*> m_forces;
  };
