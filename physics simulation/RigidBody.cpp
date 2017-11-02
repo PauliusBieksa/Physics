@@ -4,11 +4,6 @@
 # include "RigidBody.h"
 
 
-// default constructor : creates a particle represented by a default ( square ).
-// Notes :
-// - particle rotated so that it is orthogonal to the z axis .
-// - scaled
-// - no shader allocated by default to avoid creating a Shader object for each particle .
 RigidBody::RigidBody()
 {
 
@@ -23,6 +18,39 @@ RigidBody::RigidBody()
 	setCor(1.0f);
 }
 
-RigidBody ::~RigidBody()
+RigidBody::~RigidBody()
 {
+}
+
+
+
+// Calculates the inertia matrix
+glm::mat3 RigidBody::calculateInertia()
+{
+	glm::mat3 I = glm::mat3(0.0f);
+	float w = getScale()[0][0];
+	float h = getScale()[1][1];
+	float d = getScale()[2][2];
+	I[0][0] = getMass() * (h * h + d * d) / 12.0f;
+	I[1][1] = getMass() * (w * w + d * d) / 12.0f;
+	I[2][2] = getMass() * (w * w + h * h) / 12.0f;
+	return I;
+}
+
+
+
+// Overrides setMass() to also set the inverse inertia
+void RigidBody::setMass(const float & m)
+{
+	Body::setMass(m);
+	setInvInertia(glm::inverse(calculateInertia()));
+}
+
+
+
+// Overrides scale() to also set the inverse inertia
+void RigidBody::scale(const glm::vec3 & vect)
+{
+	Body::scale(vect);
+	setInvInertia(glm::inverse(calculateInertia()));
 }

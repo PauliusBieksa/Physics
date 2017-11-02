@@ -50,6 +50,8 @@ void setPos(int i, float p) { m_pos[i] = p; m_mesh.setPos(i, p); } // set the it
 void setCor(float cor) { m_cor = cor; }
 void setMass(float mass) { m_mass = mass; }
 
+void setRotate(const glm::mat4 R) { m_mesh.setRotate(R); }
+
 /*
 ** OTHER METHODS
 */
