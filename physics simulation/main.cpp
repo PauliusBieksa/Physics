@@ -43,10 +43,11 @@ struct spring
 
 
 // Constants
-const int task = 2;
+const int task = 3;
 const glm::vec3 acc_g = glm::vec3(0.0f, -9.8f, 0.0f);
-const float bounce_damper = 0.96f;
-const spring sp = { 15.0f, 1.0f, 0.3f };	// values for stiffnes, damper, rest distance
+//const float 
+//const float bounce_damper = 0.96f;
+//const spring sp = { 15.0f, 1.0f, 0.3f };	// values for stiffnes, damper, rest distance
 
 
 
@@ -66,7 +67,6 @@ void integrate(RigidBody &rb, double dt)
 {
 	// Angular components
 	rb.setAngVel(rb.getAngVel() + rb.getAngAcc() * dt);
-
 	// Create a skew-simetric matrix for w
 	glm::mat3 angVelSkew = glm::matrixCross3(rb.getAngVel());
 	// Create 3x3 rotation matrix from rb rotation matrix
@@ -75,24 +75,28 @@ void integrate(RigidBody &rb, double dt)
 	R += dt * angVelSkew * R;
 	R = glm::orthonormalize(R);
 	rb.setRotate(glm::mat4(R));
-
-	/*glm::vec3 dRot = rb.getAngVel() * dt;
-	if (glm::length2(dRot) > 0.0f)
-		rb.rotate(glm::length(dRot), dRot);*/
-		// Non-angular components
+	// Non-angular components
 	rb.setVel(rb.getVel() + rb.getAcc() * dt);
 	rb.translate(rb.getVel() * dt);
 }
 
 
 
+//// Guesstimated apply impulse / rb - what to apply the impulse to / momentum - the impulse itself / pointOfContact - where the impulse is applied
+//void applyImpulse(RigidBody &rb, glm::vec3 momentum, glm::vec3 pointOfContact)
+//{
+//	glm::vec3 L = glm::cross(pointOfContact - rb.getPos(), momentum);	// Angular momentum
+//	rb.setAngVel(rb.getAngVel() + L * rb.getInvInertia());
+//	rb.setVel(rb.getVel() + momentum / rb.getMass());
+//}
+
+
 
 // Guesstimated apply impulse / rb - what to apply the impulse to / momentum - the impulse itself / pointOfContact - where the impulse is applied
-void applyImpulse(RigidBody &rb, glm::vec3 momentum, glm::vec3 pointOfContact)
+void applyImpulse(RigidBody &rb, float impulseMagnitude, glm::vec3 r, glm::vec3 normal)
 {
-	glm::vec3 L = glm::cross(pointOfContact - rb.getPos(), momentum);	// Angular momentum
-	rb.setAngVel(rb.getAngVel() + L * rb.getInvInertia());
-	rb.setVel(rb.getVel() + momentum / rb.getMass());
+	rb.setAngVel(rb.getAngVel() + impulseMagnitude * rb.getInvInertia() * glm::cross(r, normal));
+	rb.setVel(rb.getVel() + impulseMagnitude / rb.getMass() * normal);
 }
 
 
@@ -118,21 +122,52 @@ int main()
 
 	std::vector<RigidBody> physicsObjects = std::vector<RigidBody>();
 
-	physicsObjects.push_back(RigidBody());
-	physicsObjects[0].setMesh(Mesh(Mesh::CUBE));
-	physicsObjects[0].getMesh().setShader(shader_green);
-	physicsObjects[0].setMass(1.0f);
-	physicsObjects[0].scale(glm::vec3(2.0f, 6.0f, 2.0f));
-
-	physicsObjects[0].setPos(glm::vec3(0.0f, 5.0f, 0.0f));
-	physicsObjects[0].setVel(glm::vec3(2.0f, 2.0f, 0.0f));
-	physicsObjects[0].setAngVel(glm::vec3(0.0f, 0.0f, 5.0f));
-	physicsObjects[0].addForce(new Gravity());
-
 	// Debug particle
 	Particle debugParticle = Particle();
 	debugParticle.getMesh().setShader(shader_yellow);
-	debugParticle.setPos(glm::vec3(50.0f));
+
+	// Rigid bodies
+	physicsObjects.push_back(RigidBody());
+	physicsObjects[0].setMesh(Mesh(Mesh::CUBE));
+	physicsObjects[0].getMesh().setShader(shader_green);
+	physicsObjects[0].setMass(2.0f);
+	physicsObjects[0].scale(glm::vec3(2.0f, 6.0f, 2.0f));
+	physicsObjects[0].setPos(glm::vec3(-4.0f, 5.0f, 0.0f));
+	physicsObjects[0].setCor(1.0f);
+
+	// Task1
+	bool iApplied = false;
+	if (task == 1)
+	{
+		physicsObjects[0].setPos(glm::vec3(-2.0f, 5.0f, 0.0f));
+		physicsObjects[0].setVel(glm::vec3(2.0f, 0.0f, 0.0f));
+		debugParticle.setPos(glm::vec3(3.0f, 3.5f, 0.0f));	// Just to show where the impulse will be applied
+	}
+	// Task 2
+	else if (task == 2)
+	{
+		physicsObjects[0].setVel(glm::vec3(2.0f, 4.0f, 0.0f));
+		physicsObjects[0].setAngVel(glm::vec3(0.0f, 0.0f, 1.0f));
+		physicsObjects[0].addForce(new Gravity());
+	}
+	// Task 3
+	else if (task == 3)
+	{
+		physicsObjects[0].setPos(glm::vec3(0.0f, 5.0f, 0.0f));
+		physicsObjects[0].setVel(glm::vec3(0.0f, 0.0f, 0.0f));
+		if (false)
+		{
+			physicsObjects[0].setCor(1.0f);
+			physicsObjects[0].setAngVel(glm::vec3(0.0f, 0.0f, 0.5f));
+		}
+		else
+		{
+			physicsObjects[0].setCor(0.7f);
+			physicsObjects[0].setAngVel(glm::vec3(0.1f, 0.1f, 0.1f));
+		}
+		physicsObjects[0].addForce(new Gravity());
+	}
+
 
 	// Room corners
 	glm::vec3 roomCorner1 = glm::vec3(-10.0f, 0.0f, -10.0f);
@@ -169,7 +204,7 @@ int main()
 		double newTime = (double)glfwGetTime();
 		double frameTime = newTime - currentTime;
 		timeFromStart += frameTime;
-		frameTime *= 0.25f;	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//frameTime *= 0.25f;	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 		if (frameTime > 0.25)
 			frameTime = 0.25;
 		currentTime = newTime;
@@ -195,16 +230,25 @@ int main()
 			// Integrate
 			for (RigidBody &rb : physicsObjects)
 			{
+				// Ignore objects marked as static
+				if (rb.isStatic)
+					continue;
+
 				integrate(rb, dt);
 
-				/*	if (timeFromStart > 6.0f && !iApplied)
+				// Task 1
+				if (task == 1)
+				{
+					if (timeFromStart > 2.0f && !iApplied)
 					{
-						applyImpulse(rb, glm::vec3(-5.0f, 0.0f, 0.0f), rb.getPos() + glm::vec3(1.0f, 0.0f, 0.0f));
+						//applyImpulse(rb, glm::vec3(-2.0f, 0.0f, 0.0f) * rb.getMass(), rb.getPos() + glm::vec3(1.0f, -1.5f, 0.0f));
+						applyImpulse(rb, 2.0f * rb.getMass(), glm::vec3(1.0f, -1.5f, 0.0f), glm::vec3(-1.0f, 0.0f, 0.0f));
 						iApplied = true;
-					}*/
+					}
+					std::cout << glm::to_string(rb.getInvInertia()) << std::endl;
+				}
 
-					// Collision detection
-
+				// Collision detection
 				int nOfCollisions = 0;
 				std::vector<glm::vec3> collisionPoints = std::vector<glm::vec3>();
 				std::vector<glm::vec3> worldVertices = std::vector<glm::vec3>();
@@ -237,10 +281,18 @@ int main()
 				// Apply impulses to collision points / Impulses are inversely proportional to nOfCollisions
 				if (nOfCollisions > 0)
 				{
-					tmp = (rb.getVel() + glm::cross(rb.getAngVel(), colMidpoint - rb.getPos())) * 0.7f;
-					tmp = glm::vec3(0.0f, -tmp.y, 0.0f);
-			//		tmp = glm::vec3(0.0f, 3.0f, 0.0f);
-					applyImpulse(rb, tmp, colMidpoint);
+					glm::vec3 r = colMidpoint - rb.getPos();
+					// Calculate relative velocity
+					tmp = rb.getVel() + glm::cross(rb.getAngVel(), r);
+					// Calculate magnitude of the impulse
+					float jr = -1.0f * (1.0f + rb.getCor()) * glm::dot(tmp, glm::vec3(0.0f, 1.0f, 0.0f));
+					jr /= 1.0f / rb.getMass() + glm::dot(glm::vec3(0.0f, 1.0f, 0.0f), glm::cross(rb.getInvInertia() * glm::cross(r, glm::vec3(0.0f, 1.0f, 0.0f)), r));
+					applyImpulse(rb, jr, r, glm::vec3(0.0f, 1.0f, 0.0f));
+
+					//tmp = (rb.getVel() + glm::cross(rb.getAngVel(), colMidpoint - rb.getPos())) * rb.getMass();
+					//tmp = glm::vec3(0.0f, -tmp.y * 2.0f, 0.0f);
+					//tmp = glm::vec3(0.0f, 3.0f, 0.0f);
+					//applyImpulse(rb, tmp, colMidpoint);
 				}
 
 				currState[i] = rb.getPos();

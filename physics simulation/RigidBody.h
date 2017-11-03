@@ -16,7 +16,8 @@ public:
 
 	glm::vec3 getAngVel() { return m_angVel; }
 	glm::vec3 getAngAcc() { return m_angAcc; }
-	glm::mat3 getInvInertia() { return m_invInertia; }
+	//glm::mat3 getInvInertia() { return m_invInertia; }
+	glm::mat3 getInvInertia() { return Body::getMesh().getRotate() * glm::mat4(m_invInertia) * glm::transpose(Body::getMesh().getRotate()); }
 	void scale(const glm::vec3 & vect);
 
 
