@@ -260,6 +260,7 @@ int main()
 					tmp += colPoint;
 				tmp /= nOfCollisions;
 				glm::vec3 colMidpoint = tmp;
+				// Used for task 2
 				if (task == 2 && nOfCollisions > 0)
 				{
 					for (glm::vec3 c : collisionPoints)
@@ -268,18 +269,37 @@ int main()
 					std::cout << timeFromStart << std::endl;
 					debugParticle.setPos(tmp);
 				}
-				// Apply impulses to collision points / Impulses are inversely proportional to nOfCollisions
+				// Apply impulses to collision points
 				if (nOfCollisions > 0)
 				{
 					glm::vec3 r = colMidpoint - rb.getPos();
 					// Calculate relative velocity
 					tmp = rb.getVel() + glm::cross(rb.getAngVel(), r);
+
+					// Reduce collision response and reduce spinning when the whelocity of an object is below a threshold
+					float cor = rb.getCor();
+					if (glm::length2(tmp) < 1.0f && glm::length2(rb.getVel()) < 0.64f)
+					{
+						cor *= glm::length2(tmp);
+						if (glm::length2(tmp) < 0.01f && glm::length2(rb.getVel()) < 0.01f)
+							cor = 0.0f;
+						rb.setAngVel(rb.getAngVel() * glm::length2(tmp));
+						if (glm::length2(rb.getAngVel()) < 0.025f)
+							rb.setAngVel(glm::vec3(0.0f, 0.0f, 0.0f));
+						// Recalculate relative velocity
+						tmp = rb.getVel() + glm::cross(rb.getAngVel(), r);
+
+						// If the velocity og the object is below a threshold, make it static
+						if (glm::length2(rb.getVel()) < 0.025f && glm::length2(rb.getAngVel()) < 0.025f)
+							rb.isStatic = true;
+					}
 					// Calculate magnitude of the impulse
-					float jr = -1.0f * (1.0f + rb.getCor()) * glm::dot(tmp, glm::vec3(0.0f, 1.0f, 0.0f));
+					float jr = -1.0f * (1.0f + cor) * glm::dot(tmp, glm::vec3(0.0f, 1.0f, 0.0f));
 					jr /= 1.0f / rb.getMass() + glm::dot(glm::vec3(0.0f, 1.0f, 0.0f), glm::cross(rb.getInvInertia() * glm::cross(r, glm::vec3(0.0f, 1.0f, 0.0f)), r));
 					// Apply the impulse
 					applyImpulse(rb, jr, r, glm::vec3(0.0f, 1.0f, 0.0f));
 
+					// Coulomb's friction model
 					if (task == 4)
 					{
 						// Calculate tangental velocity
