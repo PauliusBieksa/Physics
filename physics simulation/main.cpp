@@ -143,13 +143,16 @@ int main()
 	else if (task == 3 || task == 4)
 	{
 		physicsObjects[0].setPos(glm::vec3(0.0f, 5.0f, 0.0f));
-		physicsObjects[0].setVel(glm::vec3(0.0f, 0.0f, 0.0f));
 	//	physicsObjects[0].setCor(1.0f);
 	//	physicsObjects[0].setAngVel(glm::vec3(0.0f, 0.0f, 1.5f));
-		physicsObjects[0].setCor(0.7f);
-		physicsObjects[0].setAngVel(glm::vec3(0.1f, 0.1f, 0.1f));
+	//	physicsObjects[0].setCor(0.7f);
+	//	physicsObjects[0].setAngVel(glm::vec3(0.1f, 0.1f, 0.1f));
+	//	physicsObjects[0].rotate(M_PI_2, glm::vec3(1.0f, 0.0f, 0.0f));
+		physicsObjects[0].setVel(glm::vec3(-18.0f, 0.0f, 0.0f));
+		physicsObjects[0].setPos(glm::vec3(8.0f, 3.0f, 0.0f));
+	//	physicsObjects[0].setAngVel(glm::vec3(0.1f, 0.1f, 0.1f));
 
-		physicsObjects[0].setCor(0.6f);
+		physicsObjects[0].setCor(0.5f);
 		physicsObjects[0].addForce(new Gravity());
 	}
 
@@ -189,7 +192,7 @@ int main()
 		double newTime = (double)glfwGetTime();
 		double frameTime = newTime - currentTime;
 		timeFromStart += frameTime;
-		//frameTime *= 0.25f;	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//frameTime *= 1.5f;	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 		if (frameTime > 0.25)
 			frameTime = 0.25;
 		currentTime = newTime;
@@ -226,7 +229,7 @@ int main()
 				{
 					if (timeFromStart > 2.0f && !iApplied)
 					{
-						applyImpulse(rb, 2.0f * rb.getMass(), glm::vec3(1.0f, -1.5f, 0.0f), glm::vec3(-1.0f, 0.0f, 0.0f));
+						applyImpulse(rb, 2.0f * rb.getMass(), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(-1.0f, 0.0f, 0.0f));
 						iApplied = true;
 					}
 					std::cout << glm::to_string(rb.getInvInertia()) << std::endl;
@@ -304,13 +307,15 @@ int main()
 					{
 						// Calculate tangental velocity
 						tmp -= glm::dot(tmp, glm::vec3(0.0f, 1.0f, 0.0f)) * glm::vec3(0.0f, 1.0f, 0.0f);
+						float vt = glm::length(tmp);
 						// Calculate tangental impulse
-						tmp = -0.25f * abs(jr) * tmp / glm::length(tmp);
+						tmp = -0.6f * abs(jr) * tmp / glm::length(tmp);
 						// Calculate max friction
-						float jtmax = glm::length(rb.getAngVel()) / glm::length(rb.getInvInertia() * glm::cross(r, tmp / glm::length(tmp)));
+						float jtmax = vt * rb.getMass() + glm::length(rb.getAngVel()) / glm::length(rb.getInvInertia() * glm::cross(r, tmp / glm::length(tmp)));
 						if (glm::length2(tmp) > jtmax * jtmax)
 							tmp = tmp / glm::length(tmp) * jtmax;
-						applyImpulse(rb, glm::length(tmp), r, tmp / glm::length(tmp));
+						if (glm::length2(tmp))
+							applyImpulse(rb, glm::length(tmp), r, tmp / glm::length(tmp));
 					}
 				}
 
