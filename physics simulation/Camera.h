@@ -135,6 +135,10 @@ public:
 
 	GLfloat GetZoom(){return m_zoom;}
 
+
+
+	glm::vec3 getPosition() { return m_position; }
+
 private:
 	// Camera Attributes
 	glm::vec3 m_position;

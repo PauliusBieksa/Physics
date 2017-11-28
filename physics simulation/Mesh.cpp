@@ -1,27 +1,181 @@
 #include "Mesh.h"
 #include <errno.h>
+#include "glm/ext.hpp"
 
 /*
-**	MESH 
+**	MESH
 */
 
 // default constructor creates a horizontal plane or dimensions 1 x 1 centered on the origin
 Mesh::Mesh()
 {
-	// Create vertices
-	Vertex vertices[] = { 
-		Vertex(glm::vec3(-0.5f ,0.0f ,-0.5f)),
-		Vertex(glm::vec3(0.5f, 0.0f, -0.5f)),
-		Vertex(glm::vec3(-0.5f ,0.0f ,0.5f)),
-		Vertex(glm::vec3(0.5f, 0.0f, -0.5f)),
-		Vertex(glm::vec3(-0.5f ,0.0f ,0.5f)),
-		Vertex(glm::vec3(0.5f ,0.0f ,0.5f))
-	};
+	Vertex vertices[6];
+	glm::vec3 normals[6];
+
+	// create quad vertices
+	vertices[0] = Vertex(glm::vec3(-0.5f, 0.0f, -0.5f));
+	vertices[1] = Vertex(glm::vec3(0.5f, 0.0f, -0.5f));
+	vertices[2] = Vertex(glm::vec3(-0.5f, 0.0f, 0.5f));
+	vertices[3] = Vertex(glm::vec3(0.5f, 0.0f, -0.5f));
+	vertices[4] = Vertex(glm::vec3(-0.5f, 0.0f, 0.5f));
+	vertices[5] = Vertex(glm::vec3(0.5f, 0.0f, 0.5f));
+
+	// create normals
+	normals[0] = glm::vec3(0.0f, 1.0f, 0.0f);
+	normals[1] = glm::vec3(0.0f, 1.0f, 0.0f);
+	normals[2] = glm::vec3(0.0f, 1.0f, 0.0f);
+	normals[3] = glm::vec3(0.0f, 1.0f, 0.0f);
+	normals[4] = glm::vec3(0.0f, 1.0f, 0.0f);
+	normals[5] = glm::vec3(0.0f, 1.0f, 0.0f);
+
+	// number of vertices
+	m_numIndices = 6;
 
 	//create mesh
-	initMesh(vertices, sizeof(vertices) / sizeof(vertices[0]));
+	initMesh(vertices, normals);
+	//initMesh(vertices, normals, sizeof(vertices));
 
-	// initialise tansform matrices (identify)
+	// create model matrix (identity)
+	initTransform();
+}
+
+Mesh::Mesh(MeshType type)
+{
+	Vertex vertices[36];
+	glm::vec3 normals[36];
+
+	switch (type)
+	{
+	case TRIANGLE:
+		// Create triangle
+		vertices[0] = Vertex(glm::vec3(-1.0, -1.0, 0.0));
+		vertices[1] = Vertex(glm::vec3(0, 1.0, 0.0));
+		vertices[2] = Vertex(glm::vec3(1.0, -1.0, 0.0));
+		normals[0] = glm::vec3(0.0f, 1.0f, 0.0f);
+		normals[1] = glm::vec3(0.0f, 1.0f, 0.0f);
+		normals[2] = glm::vec3(0.0f, 1.0f, 0.0f);
+
+		// number of vertices
+		m_numIndices = 3;
+
+		break;
+
+	case QUAD:
+		// create quad vertices
+		vertices[0] = Vertex(glm::vec3(-0.5f, 0.0f, -0.5f));
+		vertices[1] = Vertex(glm::vec3(0.5f, 0.0f, -0.5f));
+		vertices[2] = Vertex(glm::vec3(-0.5f, 0.0f, 0.5f));
+		vertices[3] = Vertex(glm::vec3(0.5f, 0.0f, -0.5f));
+		vertices[4] = Vertex(glm::vec3(-0.5f, 0.0f, 0.5f));
+		vertices[5] = Vertex(glm::vec3(0.5f, 0.0f, 0.5f));
+
+		// create normals
+		normals[0] = glm::vec3(0.0f, 1.0f, 0.0f);
+		normals[1] = glm::vec3(0.0f, 1.0f, 0.0f);
+		normals[2] = glm::vec3(0.0f, 1.0f, 0.0f);
+		normals[3] = glm::vec3(0.0f, 1.0f, 0.0f);
+		normals[4] = glm::vec3(0.0f, 1.0f, 0.0f);
+		normals[5] = glm::vec3(0.0f, 1.0f, 0.0f);
+
+		// number of vertices
+		m_numIndices = 6;
+
+		break;
+
+	case CUBE:
+		// create cube
+		vertices[0] = Vertex(glm::vec3(-0.5f, -0.5f, -0.5f));
+		vertices[1] = Vertex(glm::vec3(0.5f, -0.5f, -0.5f));
+		vertices[2] = Vertex(glm::vec3(0.5f, 0.5f, -0.5f));
+		vertices[3] = Vertex(glm::vec3(-0.5f, -0.5f, -0.5f));
+		vertices[4] = Vertex(glm::vec3(0.5f, 0.5f, -0.5f));
+		vertices[5] = Vertex(glm::vec3(-0.5f, 0.5f, -0.5f));
+		vertices[6] = Vertex(glm::vec3(-0.5f, -0.5f, 0.5f));
+		vertices[7] = Vertex(glm::vec3(0.5f, -0.5f, 0.5f));
+		vertices[8] = Vertex(glm::vec3(0.5f, 0.5f, 0.5f));
+		vertices[9] = Vertex(glm::vec3(-0.5f, -0.5f, 0.5f));
+		vertices[10] = Vertex(glm::vec3(0.5f, 0.5f, 0.5f));
+		vertices[11] = Vertex(glm::vec3(-0.5f, 0.5f, 0.5f));
+		vertices[12] = Vertex(glm::vec3(-0.5f, -0.5f, -0.5f));
+		vertices[13] = Vertex(glm::vec3(0.5f, -0.5f, -0.5f));
+		vertices[14] = Vertex(glm::vec3(0.5f, -0.5f, 0.5f));
+		vertices[15] = Vertex(glm::vec3(-0.5f, -0.5f, -0.5f));
+		vertices[16] = Vertex(glm::vec3(0.5f, -0.5f, 0.5f));
+		vertices[17] = Vertex(glm::vec3(-0.5f, -0.5f, 0.5f));
+		vertices[18] = Vertex(glm::vec3(-0.5f, 0.5f, -0.5f));
+		vertices[19] = Vertex(glm::vec3(0.5f, 0.5f, -0.5f));
+		vertices[20] = Vertex(glm::vec3(0.5f, 0.5f, 0.5f));
+		vertices[21] = Vertex(glm::vec3(-0.5f, 0.5f, -0.5f));
+		vertices[22] = Vertex(glm::vec3(0.5f, 0.5f, 0.5f));
+		vertices[23] = Vertex(glm::vec3(-0.5f, 0.5f, 0.5f));
+		vertices[24] = Vertex(glm::vec3(-0.5f, -0.5f, -0.5f));
+		vertices[25] = Vertex(glm::vec3(-0.5f, 0.5f, -0.5f));
+		vertices[26] = Vertex(glm::vec3(-0.5f, 0.5f, 0.5f));
+		vertices[27] = Vertex(glm::vec3(-0.5f, -0.5f, -0.5f));
+		vertices[28] = Vertex(glm::vec3(-0.5f, 0.5f, 0.5f));
+		vertices[29] = Vertex(glm::vec3(-0.5f, -0.5f, 0.5f));
+		vertices[30] = Vertex(glm::vec3(0.5f, -0.5f, -0.5f));
+		vertices[31] = Vertex(glm::vec3(0.5f, 0.5f, -0.5f));
+		vertices[32] = Vertex(glm::vec3(0.5f, 0.5f, 0.5f));
+		vertices[33] = Vertex(glm::vec3(0.5f, -0.5f, -0.5f));
+		vertices[34] = Vertex(glm::vec3(0.5f, 0.5f, 0.5f));
+		vertices[35] = Vertex(glm::vec3(0.5f, -0.5f, 0.5f));
+
+		//normals
+		normals[0] = glm::vec3(0.0f, 0.0f, -1.0f);
+		normals[1] = glm::vec3(0.0f, 0.0f, -1.0f);
+		normals[2] = glm::vec3(0.0f, 0.0f, -1.0f);
+		normals[3] = glm::vec3(0.0f, 0.0f, -1.0f);
+		normals[4] = glm::vec3(0.0f, 0.0f, -1.0f);
+		normals[5] = glm::vec3(0.0f, 0.0f, -1.0f);
+		normals[6] = glm::vec3(0.0f, 0.0f, 1.0f);
+		normals[7] = glm::vec3(0.0f, 0.0f, 1.0f);
+		normals[8] = glm::vec3(0.0f, 0.0f, 1.0f);
+		normals[9] = glm::vec3(0.0f, 0.0f, 1.0f);
+		normals[10] = glm::vec3(0.0f, 0.0f, 1.0f);
+		normals[11] = glm::vec3(0.0f, 0.0f, 1.0f);
+		normals[12] = glm::vec3(0.0f, -1.0f, 0.0f);
+		normals[13] = glm::vec3(0.0f, -1.0f, 0.0f);
+		normals[14] = glm::vec3(0.0f, -1.0f, 0.0f);
+		normals[15] = glm::vec3(0.0f, -1.0f, 0.0f);
+		normals[16] = glm::vec3(0.0f, -1.0f, 0.0f);
+		normals[17] = glm::vec3(0.0f, -1.0f, 0.0f);
+		normals[18] = glm::vec3(0.0f, 1.0f, 0.0f);
+		normals[19] = glm::vec3(0.0f, 1.0f, 0.0f);
+		normals[20] = glm::vec3(0.0f, 1.0f, 0.0f);
+		normals[21] = glm::vec3(0.0f, 1.0f, 0.0f);
+		normals[22] = glm::vec3(0.0f, 1.0f, 0.0f);
+		normals[23] = glm::vec3(0.0f, 1.0f, 0.0f);
+		normals[24] = glm::vec3(-1.0f, 0.0f, 0.0f);
+		normals[25] = glm::vec3(-1.0f, 0.0f, 0.0f);
+		normals[26] = glm::vec3(-1.0f, 0.0f, 0.0f);
+		normals[27] = glm::vec3(-1.0f, 0.0f, 0.0f);
+		normals[28] = glm::vec3(-1.0f, 0.0f, 0.0f);
+		normals[29] = glm::vec3(-1.0f, 0.0f, 0.0f);
+		normals[30] = glm::vec3(1.0f, 0.0f, 0.0f);
+		normals[31] = glm::vec3(1.0f, 0.0f, 0.0f);
+		normals[32] = glm::vec3(1.0f, 0.0f, 0.0f);
+		normals[33] = glm::vec3(1.0f, 0.0f, 0.0f);
+		normals[34] = glm::vec3(1.0f, 0.0f, 0.0f);
+		normals[35] = glm::vec3(1.0f, 0.0f, 0.0f);
+
+		// number of vertices
+		m_numIndices = 36;
+
+		break;
+	}
+
+
+
+	// generate unique vertex vector (no duplicates)
+	m_vertices = std::vector<Vertex>(std::begin(vertices), std::end(vertices));
+	createUniqueVertices();
+
+	//create mesh
+	initMesh(vertices, normals);
+	//initMesh(vertices, normals, sizeof(vertices));
+
+	// create model matrix (identity)
 	initTransform();
 }
 
@@ -32,13 +186,41 @@ Mesh::Mesh(const std::string& fileName)
 	initTransform();
 }
 
+
+Mesh::Mesh(float[]) {
+
+}
+
 Mesh::~Mesh()
 {
 }
 
+// utility method: creates a vector of unique vertices (no duplicates) from array of vertices
+void Mesh::createUniqueVertices() {
+	std::vector<Vertex> temp_vertices = m_vertices;
 
-/* 
-** INIT METHODS 
+	unsigned int i = 0;
+	while (i < m_vertices.size()) {
+		unsigned int j = i + 1;
+		bool duplicateFound = false;
+		while (j < m_vertices.size() && !duplicateFound) {
+			if (m_vertices.at(i).getCoord() == m_vertices.at(j).getCoord()) {
+				duplicateFound = true;
+			}
+			j++;
+		}
+		if (duplicateFound) {
+			m_vertices.erase(m_vertices.begin() + i);
+		}
+		else {
+			++i;
+		}
+	}
+}
+
+
+/*
+** INIT METHODS
 */
 
 // initialise transform matrices to identity
@@ -49,50 +231,69 @@ void Mesh::initTransform() {
 }
 
 // create mesh from vertices
-void Mesh::initMesh(Vertex* vertices, unsigned int numVertices) {
-	m_numIndices = numVertices;
+void Mesh::initMesh(Vertex* vertices, glm::vec3* normals) {
 
 	glGenVertexArrays(1, &m_vertexArrayObject);
 	glBindVertexArray(m_vertexArrayObject);
-	glGenBuffers(NUM_BUFFERS, m_vertexArrayBuffers);
-	glBindBuffer(GL_ARRAY_BUFFER, m_vertexArrayBuffers[POSITION_VB]);
-	glBufferData(GL_ARRAY_BUFFER, numVertices * sizeof(vertices[0]), vertices, GL_STATIC_DRAW);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-	glBindVertexArray(0);
-}
 
+	// vertex buffer
+	glGenBuffers(1, &m_vertexBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, m_vertexBuffer);
+	glBufferData(GL_ARRAY_BUFFER, m_numIndices * sizeof(vertices[0]), &vertices[0], GL_STATIC_DRAW);
+
+	// normal buffer
+	glGenBuffers(1, &m_normalBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, m_normalBuffer);
+	glBufferData(GL_ARRAY_BUFFER, m_numIndices * sizeof(vertices[0]), &normals[0], GL_STATIC_DRAW);
+
+	// vertices
+	glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, m_vertexBuffer);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+	// normals
+	glEnableVertexAttribArray(2);
+	glBindBuffer(GL_ARRAY_BUFFER, m_normalBuffer);
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+	glBindVertexArray(0);
+
+}
 
 // create mesh from model (typically loaded from file)
 void Mesh::InitMesh(const IndexedModel& model)
 {
+	m_vertices = std::vector<Vertex>(std::begin(model.positions), std::end(model.positions));
+	createUniqueVertices();
+
 	m_numIndices = model.indices.size();
 
 	glGenVertexArrays(1, &m_vertexArrayObject);
 	glBindVertexArray(m_vertexArrayObject);
 
-	glGenBuffers(NUM_BUFFERS, m_vertexArrayBuffers);
-
-	glBindBuffer(GL_ARRAY_BUFFER, m_vertexArrayBuffers[POSITION_VB]);
+	// vertex buffer
+	glGenBuffers(1, &m_vertexBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, m_vertexBuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(model.positions[0]) * model.positions.size(), &model.positions[0], GL_STATIC_DRAW);
+
+	// normal buffer
+	glGenBuffers(1, &m_normalBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, m_normalBuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(model.normals[0]) * model.normals.size(), &model.normals[0], GL_STATIC_DRAW);
+
+	// vertices
 	glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, m_vertexBuffer);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-	glBindBuffer(GL_ARRAY_BUFFER, m_vertexArrayBuffers[TEXCOORD_VB]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(model.texCoords[0]) * model.texCoords.size(), &model.texCoords[0], GL_STATIC_DRAW);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);
-
-	glBindBuffer(GL_ARRAY_BUFFER, m_vertexArrayBuffers[NORMAL_VB]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(model.normals[0]) * model.normals.size(), &model.normals[0], GL_STATIC_DRAW);
+	// normals
 	glEnableVertexAttribArray(2);
+	glBindBuffer(GL_ARRAY_BUFFER, m_normalBuffer);
 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, 0);
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_vertexArrayBuffers[INDEX_VB]);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(model.indices[0]) * model.indices.size(), &model.indices[0], GL_STATIC_DRAW);
 
 	glBindVertexArray(0);
 }
+
 
 // load .obj file
 void Mesh::loadOBJ(const char * path,
@@ -114,16 +315,17 @@ void Mesh::loadOBJ(const char * path,
 	{
 		printf("The file was not opened\n");
 	}
-	else{
+	else {
 		while (1) {
 
 			char lineHeader[128];
 			// read the first word of the line
-			int res = fscanf(stream, "%s", lineHeader);
+			//int res = fscanf(stream, "%s", lineHeader);
+			int res = fscanf_s(stream, "%s", lineHeader, sizeof(lineHeader));
 			if (res == EOF)
 				break; // EOF = End Of File. Quit the loop.
 
-				   // else : parse lineHeader
+					   // else : parse lineHeader
 			if (strcmp(lineHeader, "v") == 0) {
 				glm::vec3 vertex;
 				fscanf_s(stream, "%f %f %f\n", &vertex.x, &vertex.y, &vertex.z);

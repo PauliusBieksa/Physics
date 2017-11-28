@@ -12,6 +12,7 @@
 // project includes
 #include "Camera.h"
 #include "Mesh.h"
+//#include "Spring.h"
 
 
 class Application
@@ -35,9 +36,18 @@ public:
 	static bool firstMouse; 
 	static bool keys[1024];
 
+	static bool pauseSimulation;
+
 
 	// get and set methods
 	GLFWwindow* getWindow() { return m_window; }
+	Shader getShader() { return m_shader; }
+
+	// allocate shader to application
+	void setShader(const Shader &shader) {
+		m_shader = shader;
+		m_shader.Use();
+	}
 
 	// Function prototypes
 	
@@ -58,6 +68,8 @@ private:
 	// view and projection matrices
 	glm::mat4 m_view = glm::mat4(1.0f);
 	glm::mat4 m_projection = glm::mat4(1.0f);
+	// default shader used for anything the application needs to draw that doesn't have a shader (such as lines)
+	Shader m_shader;
 
 	// window
 	GLFWwindow* m_window = NULL;
