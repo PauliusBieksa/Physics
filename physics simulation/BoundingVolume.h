@@ -2,6 +2,7 @@
 #include <glm/glm.hpp>
 #include <GL/glew.h>
 #include "glm/ext.hpp"
+#include "RigidBody.h"
 
 
 
@@ -13,6 +14,9 @@ public:
 	SphereCollider() {}///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	SphereCollider(glm::vec3 position, float radius) { m_pos = position; m_r = radius; }
 
+
+	void update(glm::vec3 position) { m_pos = position; }
+	void update(glm::vec3 position, float radius) { m_pos = position; m_r = radius; }
 
 
 	glm::vec3 getPos() { return m_pos; }
@@ -31,6 +35,16 @@ class OBBCollider
 public:
 	OBBCollider() {}///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	OBBCollider(glm::vec3 position, glm::mat3 rotation_matrix, glm::vec3 halfLengths) { m_pos = position; m_rot = rotation_matrix; m_half_lengths = halfLengths; }
+
+
+	void update(glm::vec3 position, glm::mat3 rotationMatrix) { m_pos = position; m_rot = rotationMatrix; }
+	void update(glm::vec3 position, glm::mat3 rotationMatrix, float x_scale, float y_scale, float z_scale)
+	{
+		m_pos = position;
+		m_rot = rotationMatrix;
+		m_half_lengths = glm::vec3(x_scale, y_scale, z_scale) / 2.0f;
+	}
+
 
 	glm::vec3 getPos() { return m_pos; }
 	glm::mat3 getRot() { return m_rot; }
@@ -61,6 +75,9 @@ public:
 
 	// Checks for collisions between two bounding volumes
 	bool collisionCheck(BoundingVolume other);
+
+	void updateSphere(glm::vec3 position) { m_sphere.update(position); }
+	void updateOBB(glm::vec3 position, glm::mat3 rotationMatrix) { m_OBB.update(position, rotationMatrix); }
 
 
 	ColliderType getColliderType() { return m_type; }

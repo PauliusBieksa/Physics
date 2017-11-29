@@ -26,6 +26,7 @@
 #include "Body.h"
 #include "RigidBody.h"
 #include "Particle.h"
+#include "BoundingVolume.h"
 
 
 // time
@@ -169,21 +170,22 @@ int main()
 	physicsObjects[0].setMass(2.0f);
 	physicsObjects[0].scale(glm::vec3(2.0f, 6.0f, 2.0f));
 	physicsObjects[0].setPos(glm::vec3(-4.0f, 5.0f, 0.0f));
-	physicsObjects[0].setCor(1.0f);
-
-
-	physicsObjects[0].setPos(glm::vec3(0.0f, 5.0f, 0.0f));
-	//	physicsObjects[0].setCor(1.0f);
-	//	physicsObjects[0].setAngVel(glm::vec3(0.0f, 0.0f, 1.5f));
-	//	physicsObjects[0].setCor(0.7f);
-	//	physicsObjects[0].setAngVel(glm::vec3(0.1f, 0.1f, 0.1f));
-	//	physicsObjects[0].rotate(M_PI_2, glm::vec3(1.0f, 0.0f, 0.0f));
-	//	physicsObjects[0].setVel(glm::vec3(-18.0f, 0.0f, 0.0f));
-	//	physicsObjects[0].setPos(glm::vec3(8.0f, 3.0f, 0.0f));
-	physicsObjects[0].setAngVel(glm::vec3(0.1f, 0.1f, 0.1f));
-
 	physicsObjects[0].setCor(0.5f);
-	physicsObjects[0].addForce(new Gravity());
+	physicsObjects[0].setVel(glm::vec3(0.5f, 0.0f, 0.0f));
+	BoundingVolume bv1 = BoundingVolume(physicsObjects[0].getPos(), physicsObjects[0].getRotate(), glm::vec3(2.0f, 6.0f, 2.0f) / 2.0f);
+
+	physicsObjects.push_back(RigidBody());
+	physicsObjects[1].setMesh(Mesh(Mesh::CUBE));
+	physicsObjects[1].getMesh().setShader(shader_green);
+	physicsObjects[1].setMass(2.0f);
+	physicsObjects[1].scale(glm::vec3(2.0f, 3.0f, 2.0f));
+	physicsObjects[1].setPos(glm::vec3(4.0f, 5.0f, 0.0f));
+	physicsObjects[1].setCor(0.5f);
+	physicsObjects[1].setVel(glm::vec3(-0.5f, 0.0f, 0.0f));
+	physicsObjects[1].rotate(glm::quarter_pi<float>(), glm::vec3(0.0f, 0.0f, 1.0f));
+	physicsObjects[1].rotate(glm::quarter_pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f));
+	BoundingVolume bv2 = BoundingVolume(physicsObjects[1].getPos(), physicsObjects[1].getRotate(), glm::vec3(2.0f, 3.0f, 2.0f) / 2.0f);
+
 
 
 	// Room corners
@@ -214,7 +216,7 @@ int main()
 	///////////////////////////////////////////////////////////////////////////////
 
 
-
+	bool paused = false;
 	// Game loop
 	while (!glfwWindowShouldClose(app.getWindow()))
 	{
@@ -234,7 +236,7 @@ int main()
 
 
 		// Do fixed updates while time available
-		while (timeAccumulator >= dt)
+		while (timeAccumulator >= dt && !paused)
 		{
 			// Update prevState
 			for (int i = 0; i < physicsObjects.size(); i++)
@@ -258,6 +260,17 @@ int main()
 
 				integrate(rb, dt);
 			}
+
+			///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+			bv1.updateOBB(physicsObjects[0].getPos(), physicsObjects[0].getRotate());
+			bv2.updateOBB(physicsObjects[1].getPos(), physicsObjects[1].getRotate());
+			if (bv1.collisionCheck(bv2))
+				paused = true;
+			///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
 			// Collisions
 			for (RigidBody &rb : physicsObjects)
 			{
@@ -303,9 +316,12 @@ int main()
 			time += dt;
 		}
 
-		const double alpha = timeAccumulator / dt;
-		for (int i = 0; i < physicsObjects.size(); i++)
-			physicsObjects[i].setPos(alpha * prevState[i] + (1.0 - alpha) * currState[i]);
+		if (!paused)
+		{
+			const double alpha = timeAccumulator / dt;
+			for (int i = 0; i < physicsObjects.size(); i++)
+				physicsObjects[i].setPos(alpha * prevState[i] + (1.0 - alpha) * currState[i]);
+		}
 
 		/*
 		**	INTERACTION
@@ -325,7 +341,7 @@ int main()
 		for (RigidBody rb : physicsObjects)
 			app.draw(rb.getMesh());
 
-	//	app.draw(debugParticle.getMesh());
+		//	app.draw(debugParticle.getMesh());
 		app.display();
 
 
