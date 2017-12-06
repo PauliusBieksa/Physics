@@ -5,7 +5,7 @@
 
 
 
-
+// Calls ther required collision detection algorithm based on bounding volume types
 bool BoundingVolume::collisionCheck(BoundingVolume other)
 {
 	switch (m_type)
@@ -40,7 +40,7 @@ bool BoundingVolume::collisionCheck(BoundingVolume other)
 
 
 
-
+// Checks for sphere-sphere collisions
 bool BoundingVolume::sphereSphereCheck(SphereCollider other)
 {
 	float d2 = m_sphere.getRadius() + other.getRadius();
@@ -52,6 +52,7 @@ bool BoundingVolume::sphereSphereCheck(SphereCollider other)
 
 
 
+// Checks for OBB-OBB collisions
 bool BoundingVolume::OBBOBBCheck(OBBCollider other)
 {
 	float ra, rb;
@@ -85,8 +86,6 @@ bool BoundingVolume::OBBOBBCheck(OBBCollider other)
 		rb = hlb[0] * absR[i][0] + hlb[1] * absR[i][1] + hlb[2] * absR[i][2];
 		if (abs(t[i]) > ra + rb)
 			return false;
-		if (abs(t[i]) < ra + rb)
-			rb = hlb[i];
 	}
 
 	// Test for B's local axes
