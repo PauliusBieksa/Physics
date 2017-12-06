@@ -171,7 +171,7 @@ int main()
 	physicsObjects[0].scale(glm::vec3(2.0f, 6.0f, 2.0f));
 	physicsObjects[0].setPos(glm::vec3(-4.0f, 5.0f, 0.0f));
 	physicsObjects[0].setCor(0.5f);
-	physicsObjects[0].setVel(glm::vec3(0.5f, 0.0f, 0.0f));
+	physicsObjects[0].setVel(glm::vec3(0.8f, 0.0f, 0.0f));
 	BoundingVolume bv1 = BoundingVolume(physicsObjects[0].getPos(), physicsObjects[0].getRotate(), glm::vec3(2.0f, 6.0f, 2.0f) / 2.0f);
 
 	physicsObjects.push_back(RigidBody());
@@ -181,7 +181,7 @@ int main()
 	physicsObjects[1].scale(glm::vec3(2.0f, 3.0f, 2.0f));
 	physicsObjects[1].setPos(glm::vec3(4.0f, 5.0f, 0.0f));
 	physicsObjects[1].setCor(0.5f);
-	physicsObjects[1].setVel(glm::vec3(-0.5f, 0.0f, 0.0f));
+	physicsObjects[1].setVel(glm::vec3(-0.8f, 0.0f, 0.0f));
 	physicsObjects[1].rotate(glm::quarter_pi<float>(), glm::vec3(0.0f, 0.0f, 1.0f));
 	physicsObjects[1].rotate(glm::quarter_pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f));
 	BoundingVolume bv2 = BoundingVolume(physicsObjects[1].getPos(), physicsObjects[1].getRotate(), glm::vec3(2.0f, 3.0f, 2.0f) / 2.0f);

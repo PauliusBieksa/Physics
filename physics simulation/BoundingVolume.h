@@ -80,9 +80,9 @@ public:
 	void updateOBB(glm::vec3 position, glm::mat3 rotationMatrix) { m_OBB.update(position, rotationMatrix); }
 
 
-	ColliderType getColliderType() { return m_type; }
-	SphereCollider getSphereCollider() { return m_sphere; }
-	OBBCollider getOBBCollider() { return m_OBB; }
+	const ColliderType& getColliderType() { return m_type; }
+	const SphereCollider& getSphereCollider() { return m_sphere; }
+	const OBBCollider& getOBBCollider() { return m_OBB; }
 
 private:
 	// Checks for sphere-sphere collisions
