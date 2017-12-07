@@ -148,18 +148,16 @@ int main()
 	Mesh plane = Mesh::Mesh();
 	// scale it up x5
 	plane.scale(glm::vec3(5.0f, 5.0f, 5.0f));
-	//plane.setShader(Shader("resources/shaders/core.vert", "resources/shaders/core.frag"));
 	plane.setShader(Shader("resources/shaders/physics.vert", "resources/shaders/physics.frag"));
 
 
 	// Make a shader to assign to particles
-	//Shader shader_green = Shader("resources/shaders/core.vert", "resources/shaders/core_blue.frag");
 	Shader shader_green = Shader("resources/shaders/physics.vert", "resources/shaders/physics_green.frag");
 	Shader shader_yellow = Shader("resources/shaders/core.vert", "resources/shaders/core_yellow.frag");
 
 	std::vector<RigidBody> physicsObjects = std::vector<RigidBody>();
 
-	// Debug particle
+	// Debug particle ///////////////////////////
 	Particle debugParticle = Particle();
 	debugParticle.getMesh().setShader(shader_yellow);
 
@@ -172,7 +170,9 @@ int main()
 	physicsObjects[0].setPos(glm::vec3(-4.0f, 5.0f, 0.0f));
 	physicsObjects[0].setCor(0.5f);
 	physicsObjects[0].setVel(glm::vec3(0.8f, 0.0f, 0.0f));
-	BoundingVolume bv1 = BoundingVolume(physicsObjects[0].getPos(), physicsObjects[0].getRotate(), glm::vec3(2.0f, 6.0f, 2.0f) / 2.0f);
+//	BoundingVolume bv1 = BoundingVolume(physicsObjects[0].getPos(), physicsObjects[0].getRotate(), glm::vec3(2.0f, 6.0f, 2.0f) / 2.0f);
+	BoundingVolume bv1 = BoundingVolume(physicsObjects[0].getPos(), physicsObjects[0].getRotate(),
+		glm::vec3(physicsObjects[0].getScale()[0][0], physicsObjects[0].getScale()[1][1], physicsObjects[0].getScale()[2][2]) / 2.0f);
 
 	physicsObjects.push_back(RigidBody());
 	physicsObjects[1].setMesh(Mesh(Mesh::CUBE));
@@ -184,7 +184,9 @@ int main()
 	physicsObjects[1].setVel(glm::vec3(-0.8f, 0.0f, 0.0f));
 	physicsObjects[1].rotate(glm::quarter_pi<float>(), glm::vec3(0.0f, 0.0f, 1.0f));
 	physicsObjects[1].rotate(glm::quarter_pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f));
-	BoundingVolume bv2 = BoundingVolume(physicsObjects[1].getPos(), physicsObjects[1].getRotate(), glm::vec3(2.0f, 3.0f, 2.0f) / 2.0f);
+	//BoundingVolume bv2 = BoundingVolume(physicsObjects[1].getPos(), physicsObjects[1].getRotate(), glm::vec3(2.0f, 3.0f, 2.0f) / 2.0f);
+	BoundingVolume bv2 = BoundingVolume(physicsObjects[1].getPos(), physicsObjects[1].getRotate(),
+		glm::vec3(physicsObjects[1].getScale()[0][0], physicsObjects[1].getScale()[1][1], physicsObjects[1].getScale()[2][2]) / 2.0f);
 
 
 
@@ -265,7 +267,9 @@ int main()
 
 			bv1.updateOBB(physicsObjects[0].getPos(), physicsObjects[0].getRotate());
 			bv2.updateOBB(physicsObjects[1].getPos(), physicsObjects[1].getRotate());
-			if (bv1.collisionCheck(bv2))
+			glm::mat2x3 pl = bv1.collisionCheck(bv2);
+			debugParticle.setPos(glm::vec3(pl[1][0], 2.0f, 0.0f));
+			if (bv1.collisionCheck(bv2)[0][0] == bv1.collisionCheck(bv2)[0][0]) //////////////// 2 collision checks ///////////////////
 				paused = true;
 			///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -341,7 +345,7 @@ int main()
 		for (RigidBody rb : physicsObjects)
 			app.draw(rb.getMesh());
 
-		//	app.draw(debugParticle.getMesh());
+		app.draw(debugParticle.getMesh());
 		app.display();
 
 

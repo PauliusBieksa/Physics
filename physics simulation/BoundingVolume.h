@@ -68,13 +68,15 @@ public:
 		OBB
 	};
 
+	// Default constructor
+	BoundingVolume() { m_sphere = SphereCollider(glm::vec3(), 0.01f); m_type = SPHERE; }
 	// Sphere constructor
 	BoundingVolume(glm::vec3 position, float radius) { m_sphere = SphereCollider(position, radius); m_type = SPHERE; }
 	// OBB constructor
 	BoundingVolume(glm::vec3 position, glm::mat3 rotation_matrix, glm::vec3 halfLengths) { m_OBB = OBBCollider(position, rotation_matrix, halfLengths); m_type = OBB; }
 
 	// Checks for collisions between two bounding volumes
-	bool collisionCheck(BoundingVolume other);
+	glm::mat2x3 collisionCheck(BoundingVolume other);
 
 	void updateSphere(glm::vec3 position) { m_sphere.update(position); }
 	void updateOBB(glm::vec3 position, glm::mat3 rotationMatrix) { m_OBB.update(position, rotationMatrix); }
@@ -86,9 +88,9 @@ public:
 
 private:
 	// Checks for sphere-sphere collisions
-	bool sphereSphereCheck(SphereCollider other);
+	glm::mat2x3 sphereSphereCheck(SphereCollider other);
 	// Checks for OBB-OBB collisions
-	bool OBBOBBCheck(OBBCollider other);
+	glm::mat2x3 OBBOBBCheck(OBBCollider other);
 
 
 	SphereCollider m_sphere;
