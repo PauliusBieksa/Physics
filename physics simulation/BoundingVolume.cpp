@@ -336,19 +336,17 @@ glm::mat2x3 BoundingVolume::OBBOBBCheck(OBBCollider other)
 	{
 	case 0:
 		plane[0] = m_OBB.getRot()[0];
-
 		plane[1] = plane[0] * (hla[0] - minD / 2.0f);
-		/*plane[1] = other.getPos() - m_OBB.getPos();
-		plane[1] = plane[1] / glm::length(plane[1]);
-		plane[1] *= hla[0] - minD / 2.0f;*/
 		plane[1] += m_OBB.getPos();
 
+		//R = glm::mat3(m_OBB.getRot()[0], m_OBB.getRot()[1], m_OBB.getRot()[2]);
 		// Get all the verteces rotated to R[n, yn, zn] coordinate frame centering on a point on the collision plane
 		for (int i = 0; i < 8; i++)
 		{
 			// v * R[n, yn, zn]
-			rotatedA[i] = glm::mat3(m_OBB.getRot()[0], m_OBB.getRot()[1], m_OBB.getRot()[2]) * vertsA[i] + m_OBB.getPos() - plane[1]; // can be simplified
-			rotatedB[i] = glm::mat3(m_OBB.getRot()[0], m_OBB.getRot()[1], m_OBB.getRot()[2]) * vertsB[i] + other.getPos() - plane[1];
+			rotatedA[i] = glm::mat3(m_OBB.getRot()[0], m_OBB.getRot()[1], m_OBB.getRot()[2]) * vertsA[i] + m_OBB.getPos();// -plane[1]; // can be simplified
+			rotatedB[i] = glm::mat3(m_OBB.getRot()[0], m_OBB.getRot()[1], m_OBB.getRot()[2]) * vertsB[i] + other.getPos();// -plane[1];
+
 			// Get limits of intersection in R[n, yn, zn] coordinate frame
 			// y
 			if (rotatedA[i][1] < rotatedA[aMinY][1])
@@ -368,167 +366,532 @@ glm::mat2x3 BoundingVolume::OBBOBBCheck(OBBCollider other)
 				bMinZ = i;
 			else if (rotatedB[i][2] > rotatedB[bMaxZ][2])
 				bMaxZ = i;
-
 		}
-
 		break;
 	case 1:
 		plane[0] = m_OBB.getRot()[1];
-		//plane[1] = other.getPos() - m_OBB.getPos();
-		//plane[1] = plane[1] / glm::length(plane[1]);
-		//plane[1] *= hla[1] - minD / 2.0f;
 		plane[1] = plane[0] * (hla[1] - minD / 2.0f);
 		plane[1] += m_OBB.getPos();
+
+		// Get all the verteces rotated to R[n, yn, zn] coordinate frame centering on a point on the collision plane
+		for (int i = 0; i < 8; i++)
+		{
+			// v * R[n, yn, zn]
+			rotatedA[i] = glm::mat3(m_OBB.getRot()[1], m_OBB.getRot()[2], m_OBB.getRot()[0]) * vertsA[i] + m_OBB.getPos();// -plane[1]; // can be simplified
+			rotatedB[i] = glm::mat3(m_OBB.getRot()[1], m_OBB.getRot()[2], m_OBB.getRot()[0]) * vertsB[i] + other.getPos();// -plane[1];
+
+			// Get limits of intersection in R[n, yn, zn] coordinate frame
+			// y
+			if (rotatedA[i][1] < rotatedA[aMinY][1])
+				aMinY = i;
+			else if (rotatedA[i][1] > rotatedA[aMaxY][1])
+				aMaxY = i;
+			if (rotatedB[i][1] < rotatedB[bMinY][1])
+				bMinY = i;
+			else if (rotatedB[i][1] > rotatedB[bMaxY][1])
+				bMaxY = i;
+			// z
+			if (rotatedA[i][2] < rotatedA[aMinZ][2])
+				aMinZ = i;
+			else if (rotatedA[i][2] > rotatedA[aMaxZ][2])
+				aMaxZ = i;
+			if (rotatedB[i][2] < rotatedB[bMinZ][2])
+				bMinZ = i;
+			else if (rotatedB[i][2] > rotatedB[bMaxZ][2])
+				bMaxZ = i;
+		}
 		break;
 	case 2:
 		plane[0] = m_OBB.getRot()[2];
-		plane[1] = other.getPos() - m_OBB.getPos();
-		plane[1] = plane[1] / glm::length(plane[1]);
-		plane[1] *= hla[2] - minD / 2.0f;
+		plane[1] = plane[0] * (hla[2] - minD / 2.0f);
 		plane[1] += m_OBB.getPos();
+
+		// Get all the verteces rotated to R[n, yn, zn] coordinate frame centering on a point on the collision plane
+		for (int i = 0; i < 8; i++)
+		{
+			// v * R[n, yn, zn]
+			rotatedA[i] = glm::mat3(m_OBB.getRot()[2], m_OBB.getRot()[0], m_OBB.getRot()[1]) * vertsA[i] + m_OBB.getPos();// -plane[1]; // can be simplified
+			rotatedB[i] = glm::mat3(m_OBB.getRot()[2], m_OBB.getRot()[0], m_OBB.getRot()[1]) * vertsB[i] + other.getPos();// -plane[1];
+
+			// Get limits of intersection in R[n, yn, zn] coordinate frame
+			// y
+			if (rotatedA[i][1] < rotatedA[aMinY][1])
+				aMinY = i;
+			else if (rotatedA[i][1] > rotatedA[aMaxY][1])
+				aMaxY = i;
+			if (rotatedB[i][1] < rotatedB[bMinY][1])
+				bMinY = i;
+			else if (rotatedB[i][1] > rotatedB[bMaxY][1])
+				bMaxY = i;
+			// z
+			if (rotatedA[i][2] < rotatedA[aMinZ][2])
+				aMinZ = i;
+			else if (rotatedA[i][2] > rotatedA[aMaxZ][2])
+				aMaxZ = i;
+			if (rotatedB[i][2] < rotatedB[bMinZ][2])
+				bMinZ = i;
+			else if (rotatedB[i][2] > rotatedB[bMaxZ][2])
+				bMaxZ = i;
+		}
 		break;
 	case 3:
 		plane[0] = other.getRot()[0];
-		plane[1] = other.getPos() - m_OBB.getPos();
-		plane[1] = plane[1] / glm::length(plane[1]);
 		ra = hla[0] * absR[0][0] + hla[1] * absR[1][0] + hla[2] * absR[2][0];
-		plane[1] *= ra - minD / 2.0f;
+		plane[1] = plane[0] * (ra - minD / 2.0f);
 		plane[1] += m_OBB.getPos();
+
+		// Get all the verteces rotated to R[n, yn, zn] coordinate frame centering on a point on the collision plane
+		for (int i = 0; i < 8; i++)
+		{
+			// v * R[n, yn, zn]
+			rotatedA[i] = glm::mat3(other.getRot()[0], other.getRot()[1], other.getRot()[2]) * vertsA[i] + m_OBB.getPos();// -plane[1]; // can be simplified
+			rotatedB[i] = glm::mat3(other.getRot()[0], other.getRot()[1], other.getRot()[2]) * vertsB[i] + other.getPos();// -plane[1];
+
+			// Get limits of intersection in R[n, yn, zn] coordinate frame
+			// y
+			if (rotatedA[i][1] < rotatedA[aMinY][1])
+				aMinY = i;
+			else if (rotatedA[i][1] > rotatedA[aMaxY][1])
+				aMaxY = i;
+			if (rotatedB[i][1] < rotatedB[bMinY][1])
+				bMinY = i;
+			else if (rotatedB[i][1] > rotatedB[bMaxY][1])
+				bMaxY = i;
+			// z
+			if (rotatedA[i][2] < rotatedA[aMinZ][2])
+				aMinZ = i;
+			else if (rotatedA[i][2] > rotatedA[aMaxZ][2])
+				aMaxZ = i;
+			if (rotatedB[i][2] < rotatedB[bMinZ][2])
+				bMinZ = i;
+			else if (rotatedB[i][2] > rotatedB[bMaxZ][2])
+				bMaxZ = i;
+		}
 		break;
 	case 4:
 		plane[0] = other.getRot()[1];
-		plane[1] = other.getPos() - m_OBB.getPos();
-		plane[1] = plane[1] / glm::length(plane[1]);
 		ra = hla[0] * absR[0][1] + hla[1] * absR[1][1] + hla[2] * absR[2][1];
-		plane[1] *= ra - minD / 2.0f;
+		plane[1] = plane[0] * (ra - minD / 2.0f);
 		plane[1] += m_OBB.getPos();
+
+		// Get all the verteces rotated to R[n, yn, zn] coordinate frame centering on a point on the collision plane
+		for (int i = 0; i < 8; i++)
+		{
+			// v * R[n, yn, zn]
+			rotatedA[i] = glm::mat3(other.getRot()[1], other.getRot()[2], other.getRot()[0]) * vertsA[i] + m_OBB.getPos();// -plane[1]; // can be simplified
+			rotatedB[i] = glm::mat3(other.getRot()[1], other.getRot()[2], other.getRot()[0]) * vertsB[i] + other.getPos();// -plane[1];
+
+			// Get limits of intersection in R[n, yn, zn] coordinate frame
+			// y
+			if (rotatedA[i][1] < rotatedA[aMinY][1])
+				aMinY = i;
+			else if (rotatedA[i][1] > rotatedA[aMaxY][1])
+				aMaxY = i;
+			if (rotatedB[i][1] < rotatedB[bMinY][1])
+				bMinY = i;
+			else if (rotatedB[i][1] > rotatedB[bMaxY][1])
+				bMaxY = i;
+			// z
+			if (rotatedA[i][2] < rotatedA[aMinZ][2])
+				aMinZ = i;
+			else if (rotatedA[i][2] > rotatedA[aMaxZ][2])
+				aMaxZ = i;
+			if (rotatedB[i][2] < rotatedB[bMinZ][2])
+				bMinZ = i;
+			else if (rotatedB[i][2] > rotatedB[bMaxZ][2])
+				bMaxZ = i;
+		}
 		break;
 	case 5:
 		plane[0] = other.getRot()[2];
-		plane[1] = other.getPos() - m_OBB.getPos();
-		plane[1] = plane[1] / glm::length(plane[1]);
 		ra = hla[0] * absR[0][2] + hla[1] * absR[1][2] + hla[2] * absR[2][2];
-		plane[1] *= ra - minD / 2.0f;
+		plane[1] = plane[0] * (ra - minD / 2.0f);
 		plane[1] += m_OBB.getPos();
+
+		// Get all the verteces rotated to R[n, yn, zn] coordinate frame centering on a point on the collision plane
+		for (int i = 0; i < 8; i++)
+		{
+			// v * R[n, yn, zn]
+			rotatedA[i] = glm::mat3(other.getRot()[2], other.getRot()[0], other.getRot()[1]) * vertsA[i] + m_OBB.getPos();// -plane[1]; // can be simplified
+			rotatedB[i] = glm::mat3(other.getRot()[2], other.getRot()[0], other.getRot()[1]) * vertsB[i] + other.getPos();// -plane[1];
+
+			// Get limits of intersection in R[n, yn, zn] coordinate frame
+			// y
+			if (rotatedA[i][1] < rotatedA[aMinY][1])
+				aMinY = i;
+			else if (rotatedA[i][1] > rotatedA[aMaxY][1])
+				aMaxY = i;
+			if (rotatedB[i][1] < rotatedB[bMinY][1])
+				bMinY = i;
+			else if (rotatedB[i][1] > rotatedB[bMaxY][1])
+				bMaxY = i;
+			// z
+			if (rotatedA[i][2] < rotatedA[aMinZ][2])
+				aMinZ = i;
+			else if (rotatedA[i][2] > rotatedA[aMaxZ][2])
+				aMaxZ = i;
+			if (rotatedB[i][2] < rotatedB[bMinZ][2])
+				bMinZ = i;
+			else if (rotatedB[i][2] > rotatedB[bMaxZ][2])
+				bMaxZ = i;
+		}
 		break;
 	case 6:
 		plane[0] = glm::cross(m_OBB.getRot()[0], other.getRot()[0]);
-		plane[1] = other.getPos() - m_OBB.getPos();
-		plane[1] = plane[1] / glm::length(plane[1]);
+		plane[0] /= glm::length(plane[0]);
 		ra = hla[1] * absR[2][0] + hla[2] * absR[1][0];
-		plane[1] *= ra - minD / 2.0f;
+		plane[1] = plane[0] * (ra - minD / 2.0f);
 		plane[1] += m_OBB.getPos();
+
+		// Get all the verteces rotated to R[n, yn, zn] coordinate frame centering on a point on the collision plane
+		for (int i = 0; i < 8; i++)
+		{
+			// v * R[n, yn, zn]
+			rotatedA[i] = glm::mat3(plane[0], glm::cross(plane[0], m_OBB.getRot()[0]), m_OBB.getRot()[0]) * vertsA[i] + m_OBB.getPos();// -plane[1];
+			rotatedB[i] = glm::mat3(plane[0], glm::cross(plane[0], m_OBB.getRot()[0]), m_OBB.getRot()[0]) * vertsB[i] + other.getPos();// -plane[1];
+
+			// Get limits of intersection in R[n, yn, zn] coordinate frame
+			// y
+			if (rotatedA[i][1] < rotatedA[aMinY][1])
+				aMinY = i;
+			else if (rotatedA[i][1] > rotatedA[aMaxY][1])
+				aMaxY = i;
+			if (rotatedB[i][1] < rotatedB[bMinY][1])
+				bMinY = i;
+			else if (rotatedB[i][1] > rotatedB[bMaxY][1])
+				bMaxY = i;
+			// z
+			if (rotatedA[i][2] < rotatedA[aMinZ][2])
+				aMinZ = i;
+			else if (rotatedA[i][2] > rotatedA[aMaxZ][2])
+				aMaxZ = i;
+			if (rotatedB[i][2] < rotatedB[bMinZ][2])
+				bMinZ = i;
+			else if (rotatedB[i][2] > rotatedB[bMaxZ][2])
+				bMaxZ = i;
+		}
 		break;
 	case 7:
 		plane[0] = glm::cross(m_OBB.getRot()[0], other.getRot()[1]);
-		plane[1] = other.getPos() - m_OBB.getPos();
-		plane[1] = plane[1] / glm::length(plane[1]);
+		plane[0] /= glm::length(plane[0]);
 		ra = hla[1] * absR[2][1] + hla[2] * absR[1][1];
-		plane[1] *= ra - minD / 2.0f;
+		plane[1] = plane[0] * (ra - minD / 2.0f);
 		plane[1] += m_OBB.getPos();
+
+		// Get all the verteces rotated to R[n, yn, zn] coordinate frame centering on a point on the collision plane
+		for (int i = 0; i < 8; i++)
+		{
+			// v * R[n, yn, zn]
+			rotatedA[i] = glm::mat3(plane[0], glm::cross(plane[0], m_OBB.getRot()[0]), m_OBB.getRot()[0]) * vertsA[i] + m_OBB.getPos();// -plane[1];
+			rotatedB[i] = glm::mat3(plane[0], glm::cross(plane[0], m_OBB.getRot()[0]), m_OBB.getRot()[0]) * vertsB[i] + other.getPos();// -plane[1];
+
+			// Get limits of intersection in R[n, yn, zn] coordinate frame
+			// y
+			if (rotatedA[i][1] < rotatedA[aMinY][1])
+				aMinY = i;
+			else if (rotatedA[i][1] > rotatedA[aMaxY][1])
+				aMaxY = i;
+			if (rotatedB[i][1] < rotatedB[bMinY][1])
+				bMinY = i;
+			else if (rotatedB[i][1] > rotatedB[bMaxY][1])
+				bMaxY = i;
+			// z
+			if (rotatedA[i][2] < rotatedA[aMinZ][2])
+				aMinZ = i;
+			else if (rotatedA[i][2] > rotatedA[aMaxZ][2])
+				aMaxZ = i;
+			if (rotatedB[i][2] < rotatedB[bMinZ][2])
+				bMinZ = i;
+			else if (rotatedB[i][2] > rotatedB[bMaxZ][2])
+				bMaxZ = i;
+		}
 		break;
 	case 8:
 		plane[0] = glm::cross(m_OBB.getRot()[0], other.getRot()[2]);
-		plane[1] = other.getPos() - m_OBB.getPos();
-		plane[1] = plane[1] / glm::length(plane[1]);
+		plane[0] /= glm::length(plane[0]);
 		ra = hla[1] * absR[2][2] + hla[2] * absR[1][2];
-		plane[1] *= ra - minD / 2.0f;
+		plane[1] = plane[0] * (ra - minD / 2.0f);
 		plane[1] += m_OBB.getPos();
+
+		// Get all the verteces rotated to R[n, yn, zn] coordinate frame centering on a point on the collision plane
+		for (int i = 0; i < 8; i++)
+		{
+			// v * R[n, yn, zn]
+			rotatedA[i] = glm::mat3(plane[0], glm::cross(plane[0], m_OBB.getRot()[0]), m_OBB.getRot()[0]) * vertsA[i] + m_OBB.getPos();// -plane[1];
+			rotatedB[i] = glm::mat3(plane[0], glm::cross(plane[0], m_OBB.getRot()[0]), m_OBB.getRot()[0]) * vertsB[i] + other.getPos();// -plane[1];
+
+			// Get limits of intersection in R[n, yn, zn] coordinate frame
+			// y
+			if (rotatedA[i][1] < rotatedA[aMinY][1])
+				aMinY = i;
+			else if (rotatedA[i][1] > rotatedA[aMaxY][1])
+				aMaxY = i;
+			if (rotatedB[i][1] < rotatedB[bMinY][1])
+				bMinY = i;
+			else if (rotatedB[i][1] > rotatedB[bMaxY][1])
+				bMaxY = i;
+			// z
+			if (rotatedA[i][2] < rotatedA[aMinZ][2])
+				aMinZ = i;
+			else if (rotatedA[i][2] > rotatedA[aMaxZ][2])
+				aMaxZ = i;
+			if (rotatedB[i][2] < rotatedB[bMinZ][2])
+				bMinZ = i;
+			else if (rotatedB[i][2] > rotatedB[bMaxZ][2])
+				bMaxZ = i;
+		}
 		break;
 	case 9:
 		plane[0] = glm::cross(m_OBB.getRot()[1], other.getRot()[0]);
-		plane[1] = other.getPos() - m_OBB.getPos();
-		plane[1] = plane[1] / glm::length(plane[1]);
+		plane[0] /= glm::length(plane[0]);
 		ra = hla[0] * absR[2][0] + hla[2] * absR[0][0];
-		plane[1] *= ra - minD / 2.0f;
+		plane[1] = plane[0] * (ra - minD / 2.0f);
 		plane[1] += m_OBB.getPos();
+
+		// Get all the verteces rotated to R[n, yn, zn] coordinate frame centering on a point on the collision plane
+		for (int i = 0; i < 8; i++)
+		{
+			// v * R[n, yn, zn]
+			rotatedA[i] = glm::mat3(plane[0], glm::cross(plane[0], m_OBB.getRot()[1]), m_OBB.getRot()[1]) * vertsA[i] + m_OBB.getPos();// -plane[1];
+			rotatedB[i] = glm::mat3(plane[0], glm::cross(plane[0], m_OBB.getRot()[1]), m_OBB.getRot()[1]) * vertsB[i] + other.getPos();// -plane[1];
+
+			// Get limits of intersection in R[n, yn, zn] coordinate frame
+			// y
+			if (rotatedA[i][1] < rotatedA[aMinY][1])
+				aMinY = i;
+			else if (rotatedA[i][1] > rotatedA[aMaxY][1])
+				aMaxY = i;
+			if (rotatedB[i][1] < rotatedB[bMinY][1])
+				bMinY = i;
+			else if (rotatedB[i][1] > rotatedB[bMaxY][1])
+				bMaxY = i;
+			// z
+			if (rotatedA[i][2] < rotatedA[aMinZ][2])
+				aMinZ = i;
+			else if (rotatedA[i][2] > rotatedA[aMaxZ][2])
+				aMaxZ = i;
+			if (rotatedB[i][2] < rotatedB[bMinZ][2])
+				bMinZ = i;
+			else if (rotatedB[i][2] > rotatedB[bMaxZ][2])
+				bMaxZ = i;
+		}
 		break;
 	case 10:
 		plane[0] = glm::cross(m_OBB.getRot()[1], other.getRot()[1]);
-		plane[1] = other.getPos() - m_OBB.getPos();
-		plane[1] = plane[1] / glm::length(plane[1]);
+		plane[0] /= glm::length(plane[0]);
 		ra = hla[0] * absR[2][1] + hla[2] * absR[0][1];
-		plane[1] *= ra - minD / 2.0f;
+		plane[1] = plane[0] * (ra - minD / 2.0f);
 		plane[1] += m_OBB.getPos();
+
+		// Get all the verteces rotated to R[n, yn, zn] coordinate frame centering on a point on the collision plane
+		for (int i = 0; i < 8; i++)
+		{
+			// v * R[n, yn, zn]
+			rotatedA[i] = glm::mat3(plane[0], glm::cross(plane[0], m_OBB.getRot()[1]), m_OBB.getRot()[1]) * vertsA[i] + m_OBB.getPos();// -plane[1];
+			rotatedB[i] = glm::mat3(plane[0], glm::cross(plane[0], m_OBB.getRot()[1]), m_OBB.getRot()[1]) * vertsB[i] + other.getPos();// -plane[1];
+
+			// Get limits of intersection in R[n, yn, zn] coordinate frame
+			// y
+			if (rotatedA[i][1] < rotatedA[aMinY][1])
+				aMinY = i;
+			else if (rotatedA[i][1] > rotatedA[aMaxY][1])
+				aMaxY = i;
+			if (rotatedB[i][1] < rotatedB[bMinY][1])
+				bMinY = i;
+			else if (rotatedB[i][1] > rotatedB[bMaxY][1])
+				bMaxY = i;
+			// z
+			if (rotatedA[i][2] < rotatedA[aMinZ][2])
+				aMinZ = i;
+			else if (rotatedA[i][2] > rotatedA[aMaxZ][2])
+				aMaxZ = i;
+			if (rotatedB[i][2] < rotatedB[bMinZ][2])
+				bMinZ = i;
+			else if (rotatedB[i][2] > rotatedB[bMaxZ][2])
+				bMaxZ = i;
+		}
 		break;
 	case 11:
 		plane[0] = glm::cross(m_OBB.getRot()[1], other.getRot()[2]);
-		plane[1] = other.getPos() - m_OBB.getPos();
-		plane[1] = plane[1] / glm::length(plane[1]);
+		plane[0] /= glm::length(plane[0]);
 		ra = hla[0] * absR[2][2] + hla[2] * absR[0][2];
-		plane[1] *= ra - minD / 2.0f;
+		plane[1] = plane[0] * (ra - minD / 2.0f);
 		plane[1] += m_OBB.getPos();
+
+		// Get all the verteces rotated to R[n, yn, zn] coordinate frame centering on a point on the collision plane
+		for (int i = 0; i < 8; i++)
+		{
+			// v * R[n, yn, zn]
+			rotatedA[i] = glm::mat3(plane[0], glm::cross(plane[0], m_OBB.getRot()[1]), m_OBB.getRot()[1]) * vertsA[i] + m_OBB.getPos();// -plane[1];
+			rotatedB[i] = glm::mat3(plane[0], glm::cross(plane[0], m_OBB.getRot()[1]), m_OBB.getRot()[1]) * vertsB[i] + other.getPos();// -plane[1];
+
+			// Get limits of intersection in R[n, yn, zn] coordinate frame
+			// y
+			if (rotatedA[i][1] < rotatedA[aMinY][1])
+				aMinY = i;
+			else if (rotatedA[i][1] > rotatedA[aMaxY][1])
+				aMaxY = i;
+			if (rotatedB[i][1] < rotatedB[bMinY][1])
+				bMinY = i;
+			else if (rotatedB[i][1] > rotatedB[bMaxY][1])
+				bMaxY = i;
+			// z
+			if (rotatedA[i][2] < rotatedA[aMinZ][2])
+				aMinZ = i;
+			else if (rotatedA[i][2] > rotatedA[aMaxZ][2])
+				aMaxZ = i;
+			if (rotatedB[i][2] < rotatedB[bMinZ][2])
+				bMinZ = i;
+			else if (rotatedB[i][2] > rotatedB[bMaxZ][2])
+				bMaxZ = i;
+		}
 		break;
 	case 12:
 		plane[0] = glm::cross(m_OBB.getRot()[2], other.getRot()[0]);
-		plane[1] = other.getPos() - m_OBB.getPos();
-		plane[1] = plane[1] / glm::length(plane[1]);
+		plane[0] /= glm::length(plane[0]);
 		ra = hla[0] * absR[1][0] + hla[1] * absR[0][0];
-		plane[1] *= ra - minD / 2.0f;
+		plane[1] = plane[0] * (ra - minD / 2.0f);
 		plane[1] += m_OBB.getPos();
+
+		// Get all the verteces rotated to R[n, yn, zn] coordinate frame centering on a point on the collision plane
+		for (int i = 0; i < 8; i++)
+		{
+			// v * R[n, yn, zn]
+			rotatedA[i] = glm::mat3(plane[0], glm::cross(plane[0], m_OBB.getRot()[2]), m_OBB.getRot()[2]) * vertsA[i] + m_OBB.getPos();// -plane[1];
+			rotatedB[i] = glm::mat3(plane[0], glm::cross(plane[0], m_OBB.getRot()[2]), m_OBB.getRot()[2]) * vertsB[i] + other.getPos();// -plane[1];
+
+			// Get limits of intersection in R[n, yn, zn] coordinate frame
+			// y
+			if (rotatedA[i][1] < rotatedA[aMinY][1])
+				aMinY = i;
+			else if (rotatedA[i][1] > rotatedA[aMaxY][1])
+				aMaxY = i;
+			if (rotatedB[i][1] < rotatedB[bMinY][1])
+				bMinY = i;
+			else if (rotatedB[i][1] > rotatedB[bMaxY][1])
+				bMaxY = i;
+			// z
+			if (rotatedA[i][2] < rotatedA[aMinZ][2])
+				aMinZ = i;
+			else if (rotatedA[i][2] > rotatedA[aMaxZ][2])
+				aMaxZ = i;
+			if (rotatedB[i][2] < rotatedB[bMinZ][2])
+				bMinZ = i;
+			else if (rotatedB[i][2] > rotatedB[bMaxZ][2])
+				bMaxZ = i;
+		}
 		break;
 	case 13:
 		plane[0] = glm::cross(m_OBB.getRot()[2], other.getRot()[1]);
-		plane[1] = other.getPos() - m_OBB.getPos();
-		plane[1] = plane[1] / glm::length(plane[1]);
+		plane[0] /= glm::length(plane[0]);
 		ra = hla[0] * absR[1][1] + hla[1] * absR[0][1];
-		plane[1] *= ra - minD / 2.0f;
+		plane[1] = plane[0] * (ra - minD / 2.0f);
 		plane[1] += m_OBB.getPos();
+
+		// Get all the verteces rotated to R[n, yn, zn] coordinate frame centering on a point on the collision plane
+		for (int i = 0; i < 8; i++)
+		{
+			// v * R[n, yn, zn]
+			rotatedA[i] = glm::mat3(plane[0], glm::cross(plane[0], m_OBB.getRot()[2]), m_OBB.getRot()[2]) * vertsA[i] + m_OBB.getPos();// -plane[1];
+			rotatedB[i] = glm::mat3(plane[0], glm::cross(plane[0], m_OBB.getRot()[2]), m_OBB.getRot()[2]) * vertsB[i] + other.getPos();// -plane[1];
+
+			// Get limits of intersection in R[n, yn, zn] coordinate frame
+			// y
+			if (rotatedA[i][1] < rotatedA[aMinY][1])
+				aMinY = i;
+			else if (rotatedA[i][1] > rotatedA[aMaxY][1])
+				aMaxY = i;
+			if (rotatedB[i][1] < rotatedB[bMinY][1])
+				bMinY = i;
+			else if (rotatedB[i][1] > rotatedB[bMaxY][1])
+				bMaxY = i;
+			// z
+			if (rotatedA[i][2] < rotatedA[aMinZ][2])
+				aMinZ = i;
+			else if (rotatedA[i][2] > rotatedA[aMaxZ][2])
+				aMaxZ = i;
+			if (rotatedB[i][2] < rotatedB[bMinZ][2])
+				bMinZ = i;
+			else if (rotatedB[i][2] > rotatedB[bMaxZ][2])
+				bMaxZ = i;
+		}
 		break;
 	case 14:
 		plane[0] = glm::cross(m_OBB.getRot()[2], other.getRot()[2]);
-		plane[1] = other.getPos() - m_OBB.getPos();
-		plane[1] = plane[1] / glm::length(plane[1]);
+		plane[0] /= glm::length(plane[0]);
 		ra = hla[0] * absR[1][2] + hla[1] * absR[0][2];
-		plane[1] *= ra - minD / 2.0f;
+		plane[1] = plane[0] * (ra - minD / 2.0f);
 		plane[1] += m_OBB.getPos();
+
+		// Get all the verteces rotated to R[n, yn, zn] coordinate frame centering on a point on the collision plane
+		for (int i = 0; i < 8; i++)
+		{
+			// v * R[n, yn, zn]
+			rotatedA[i] = glm::mat3(plane[0], glm::cross(plane[0], m_OBB.getRot()[2]), m_OBB.getRot()[2]) * vertsA[i] + m_OBB.getPos();// -plane[1];
+			rotatedB[i] = glm::mat3(plane[0], glm::cross(plane[0], m_OBB.getRot()[2]), m_OBB.getRot()[2]) * vertsB[i] + other.getPos();// -plane[1];
+
+			// Get limits of intersection in R[n, yn, zn] coordinate frame
+			// y
+			if (rotatedA[i][1] < rotatedA[aMinY][1])
+				aMinY = i;
+			else if (rotatedA[i][1] > rotatedA[aMaxY][1])
+				aMaxY = i;
+			if (rotatedB[i][1] < rotatedB[bMinY][1])
+				bMinY = i;
+			else if (rotatedB[i][1] > rotatedB[bMaxY][1])
+				bMaxY = i;
+			// z
+			if (rotatedA[i][2] < rotatedA[aMinZ][2])
+				aMinZ = i;
+			else if (rotatedA[i][2] > rotatedA[aMaxZ][2])
+				aMaxZ = i;
+			if (rotatedB[i][2] < rotatedB[bMinZ][2])
+				bMinZ = i;
+			else if (rotatedB[i][2] > rotatedB[bMaxZ][2])
+				bMaxZ = i;
+		}
 		break;
 	}
 
 
 
-
+	// Get all the points beyond the collision plane by the minimum intersection distance and within 
+	for (int i = 0; i < 8; i++)
+	{
+		// If dot product is positive, point is in front of the plane 
+		if (abs(glm::dot(plane[0], vertsA[i] + m_OBB.getPos() - plane[1]) - (minD / 2.0f)) < 0.01f
+			&& ((rotatedA[i][1] <= rotatedB[bMaxY][1] && rotatedA[i][1] >= rotatedB[bMinY][1])
+				|| (rotatedA[i][2] <= rotatedB[bMaxZ][2] && rotatedA[i][2] >= rotatedB[bMinZ][2])))
 		{
-		
-
-		for (int i = 0; i < 8; i++)
+			nOfCollisionsA++;
+			collisionPointA += vertsA[i] + m_OBB.getPos();
+		}
+		// If dot product is negative, point is behind the plane 
+		if (abs(glm::dot(plane[0], vertsB[i] + other.getPos() - plane[1]) + (minD / 2.0f)) < 0.01f
+			&& ((rotatedB[i][1] <= rotatedA[aMaxY][1] && rotatedB[i][1] >= rotatedA[aMinY][1])
+				|| (rotatedB[i][2] <= rotatedA[aMaxZ][2] && rotatedB[i][2] >= rotatedA[aMinZ][2])))
 		{
-			// If dot product is positive, point is in front of the plane 
-			if (abs(glm::dot(plane[0], vertsA[i] + m_OBB.getPos() - plane[1]) - (minD / 2.0f)) < 0.01f
-				&& ((rotatedA[i][1] <= rotatedB[bMaxY][1] && rotatedA[i][1] >= rotatedB[bMinY][1])
-					|| (rotatedA[i][2] <= rotatedB[bMaxZ][2] && rotatedA[i][2] >= rotatedB[bMinZ][2])))
-			{
-				nOfCollisionsA++;
-				collisionPointA += vertsA[i] + m_OBB.getPos();
-			}
-			// If dot product is negative, point is behind the plane 
-			if (abs(glm::dot(plane[0], vertsB[i] + other.getPos() - plane[1]) + (minD / 2.0f)) < 0.01f
-				&& ((rotatedB[i][1] <= rotatedA[aMaxY][1] && rotatedB[i][1] >= rotatedA[aMinY][1])
-					|| (rotatedB[i][2] <= rotatedA[aMaxZ][2] && rotatedB[i][2] >= rotatedA[aMinZ][2])))
-			{
-				nOfCollisionsB++;
-				collisionPointB += vertsB[i] + other.getPos();
-			}
+			nOfCollisionsB++;
+			collisionPointB += vertsB[i] + other.getPos();
 		}
-		if (nOfCollisionsA == nOfCollisionsB)
-		{
-			collisionPointA += collisionPointB;
-			collisionPointA /= (float)(nOfCollisionsA + nOfCollisionsB);
-			plane[1] = collisionPointA;
-		}
-		else if (nOfCollisionsA != 0 && nOfCollisionsA < nOfCollisionsB)
-		{
-			collisionPointA /= (float)nOfCollisionsA;
-			plane[1] = collisionPointA;
-		}
-		else if (nOfCollisionsB != 0 && nOfCollisionsA > nOfCollisionsB)
-		{
-			collisionPointB /= (float)nOfCollisionsB;
-			plane[1] = collisionPointB;
-		}
-		}
+	}
+	if (nOfCollisionsA == nOfCollisionsB)
+	{
+		collisionPointA += collisionPointB;
+		collisionPointA /= (float)(nOfCollisionsA + nOfCollisionsB);
+		plane[1] = collisionPointA;
+	}
+	else if (nOfCollisionsA != 0 && nOfCollisionsA < nOfCollisionsB)
+	{
+		collisionPointA /= (float)nOfCollisionsA;
+		plane[1] = collisionPointA;
+	}
+	else if (nOfCollisionsB != 0 && nOfCollisionsA > nOfCollisionsB)
+	{
+		collisionPointB /= (float)nOfCollisionsB;
+		plane[1] = collisionPointB;
+	}
 
 
-	plane[0] /= glm::length(plane[0]);
 	return plane;
 }
