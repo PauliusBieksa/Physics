@@ -13,6 +13,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/matrix_operation.hpp>
+#include <glm/gtc/quaternion.hpp>
 #include "glm/ext.hpp"
 
 
@@ -90,6 +91,24 @@ void applyImpulse(RigidBody &rb, float impulseMagnitude, glm::vec3 r, glm::vec3 
 
 
 
+
+void collisionResponse(RigidBody &rb1, RigidBody &rb2, glm::mat2x3 collisionPlane)
+{
+	glm::vec3 r1 = collisionPlane[1] - rb1.getPos();
+	glm::vec3 r2 = collisionPlane[1] - rb2.getPos();
+	glm::vec3 vr = rb1.getVel() + glm::cross(rb1.getAngVel(), r1) - (rb2.getVel() + glm::cross(rb2.getAngVel(), r2));
+	float jr;
+	jr = -(1 + rb1.getCor()) * glm::dot(vr, collisionPlane[0]);		//////////////////// have a look at CoR for both rigid bodies ////////////////
+	jr /= 1.0f / rb1.getMass() + 1.0f / rb2.getMass()
+		+ glm::dot(collisionPlane[0], glm::cross((rb1.getInvInertia() * glm::cross(r1, collisionPlane[0])), r1))
+		+ glm::dot(collisionPlane[0], glm::cross((rb2.getInvInertia() * glm::cross(r2, collisionPlane[0])), r2));
+
+	applyImpulse(rb1, jr, r1, collisionPlane[0]);
+	applyImpulse(rb2, -jr, r2, collisionPlane[0]);
+}
+
+
+
 // Calculates and applies the collision impluse with friction
 void applyGroundCollision(RigidBody &rb, glm::vec3 colPoint)
 {
@@ -154,12 +173,13 @@ int main()
 	// Make a shader to assign to particles
 	Shader shader_green = Shader("resources/shaders/physics.vert", "resources/shaders/physics_green.frag");
 	Shader shader_yellow = Shader("resources/shaders/core.vert", "resources/shaders/core_yellow.frag");
+	Shader shader_red = Shader("resources/shaders/core.vert", "resources/shaders/core_red.frag");
 
 	std::vector<RigidBody> physicsObjects = std::vector<RigidBody>();
 
 	// Debug particle ///////////////////////////
 	Particle debugParticle = Particle();
-	debugParticle.getMesh().setShader(shader_yellow);
+	debugParticle.getMesh().setShader(shader_red);
 
 	// Rigid bodies
 	physicsObjects.push_back(RigidBody());
@@ -170,23 +190,24 @@ int main()
 	physicsObjects[0].setPos(glm::vec3(-4.0f, 5.0f, 0.0f));
 	physicsObjects[0].setCor(0.5f);
 	physicsObjects[0].setVel(glm::vec3(0.8f, 0.0f, 0.0f));
-//	BoundingVolume bv1 = BoundingVolume(physicsObjects[0].getPos(), physicsObjects[0].getRotate(), glm::vec3(2.0f, 6.0f, 2.0f) / 2.0f);
-	BoundingVolume bv1 = BoundingVolume(physicsObjects[0].getPos(), physicsObjects[0].getRotate(),
-		glm::vec3(physicsObjects[0].getScale()[0][0], physicsObjects[0].getScale()[1][1], physicsObjects[0].getScale()[2][2]) / 2.0f);
+	//physicsObjects[0].setAngVel(glm::vec3(0.0f, 0.0f, 0.3f));
+	//	BoundingVolume bv1 = BoundingVolume(physicsObjects[0].getPos(), physicsObjects[0].getRotate(), glm::vec3(2.0f, 6.0f, 2.0f) / 2.0f);
+	BoundingVolume bv1 = BoundingVolume(physicsObjects[0].getPos(), physicsObjects[0].getRotate()
+		, glm::vec3(physicsObjects[0].getScale()[0][0], physicsObjects[0].getScale()[1][1], physicsObjects[0].getScale()[2][2]) / 2.0f);
 
 	physicsObjects.push_back(RigidBody());
 	physicsObjects[1].setMesh(Mesh(Mesh::CUBE));
 	physicsObjects[1].getMesh().setShader(shader_green);
 	physicsObjects[1].setMass(2.0f);
 	physicsObjects[1].scale(glm::vec3(2.0f, 3.0f, 2.0f));
-	physicsObjects[1].setPos(glm::vec3(4.0f, 5.0f, 0.0f));
+	physicsObjects[1].setPos(glm::vec3(0.0f, 5.0f, 0.0f));
 	physicsObjects[1].setCor(0.5f);
-	physicsObjects[1].setVel(glm::vec3(-0.8f, 0.0f, 0.0f));
-	physicsObjects[1].rotate(glm::quarter_pi<float>(), glm::vec3(0.0f, 0.0f, 1.0f));
-	physicsObjects[1].rotate(glm::quarter_pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f));
+	//physicsObjects[1].setVel(glm::vec3(-0.8f, 0.0f, 0.0f));
+	//physicsObjects[1].rotate(glm::quarter_pi<float>(), glm::vec3(1.0f, 0.0f, 0.0f));
+	physicsObjects[1].rotate(glm::quarter_pi<float>() / 2.0f, glm::vec3(0.0f, 0.0f, 1.0f));
 	//BoundingVolume bv2 = BoundingVolume(physicsObjects[1].getPos(), physicsObjects[1].getRotate(), glm::vec3(2.0f, 3.0f, 2.0f) / 2.0f);
-	BoundingVolume bv2 = BoundingVolume(physicsObjects[1].getPos(), physicsObjects[1].getRotate(),
-		glm::vec3(physicsObjects[1].getScale()[0][0], physicsObjects[1].getScale()[1][1], physicsObjects[1].getScale()[2][2]) / 2.0f);
+	BoundingVolume bv2 = BoundingVolume(physicsObjects[1].getPos(), physicsObjects[1].getRotate()
+		, glm::vec3(physicsObjects[1].getScale()[0][0], physicsObjects[1].getScale()[1][1], physicsObjects[1].getScale()[2][2]) / 2.0f);
 
 
 
@@ -207,12 +228,19 @@ int main()
 	double timeAccumulator = 0.0;
 
 	// State variables to store positions for interpolation
-	std::vector<glm::vec3> prevState;
-	std::vector<glm::vec3> currState;
+	//std::vector<glm::mat4> prevState;
+	//std::vector<glm::mat4> currState;
+	////std::vector<glm::vec3> prevState;
+	////std::vector<glm::vec3> currState;
+	//for (RigidBody &rb : physicsObjects)
+	//	prevState.push_back(rb.getTranslate() * rb.getRotate());
+	//for (RigidBody &rb : physicsObjects)
+	//	currState.push_back(rb.getTranslate() * rb.getRotate());
+	/*
 	for (RigidBody &rb : physicsObjects)
 		prevState.push_back(rb.getPos());
 	for (RigidBody &rb : physicsObjects)
-		currState.push_back(rb.getPos());
+		currState.push_back(rb.getPos());*/
 
 	double timeFromStart = 0.0f;
 	///////////////////////////////////////////////////////////////////////////////
@@ -223,26 +251,35 @@ int main()
 	while (!glfwWindowShouldClose(app.getWindow()))
 	{
 		// Reseting the positions of particles to be calculated on full steps
-		for (int i = 0; i < currState.size(); i++)
-			physicsObjects[i].setPos(currState[i]);
+		//for (int i = 0; i < currState.size(); i++)
+		//{
+		//	physicsObjects[i].setPos(currState[i][3]);
+		//	// Set rotate without the translate values
+		//	physicsObjects[i].setRotate(glm::mat4(glm::mat3(currState[i])));
+		//}
 
 		// Timekeeping
 		double newTime = (double)glfwGetTime();
 		double frameTime = newTime - currentTime;
 		timeFromStart += frameTime;
-		//frameTime *= 1.5f;	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//	frameTime *= 0.5f;	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 		if (frameTime > 0.25)
 			frameTime = 0.25;
 		currentTime = newTime;
-		timeAccumulator += frameTime;
-
+		if (!app.pauseSimulation)
+		{
+			timeAccumulator += frameTime;
+		}
 
 		// Do fixed updates while time available
-		while (timeAccumulator >= dt && !paused)
+		//while (timeAccumulator >= dt && !paused)
+		while (timeAccumulator >= dt)
 		{
 			// Update prevState
-			for (int i = 0; i < physicsObjects.size(); i++)
-				prevState[i] = physicsObjects[i].getPos();
+			/*for (int i = 0; i < physicsObjects.size(); i++)
+			{
+				prevState[i] = physicsObjects[i].getTranslate() * physicsObjects[i].getRotate();
+			}*/
 
 			// Apply all forces before integrating
 			for (RigidBody &rb : physicsObjects)
@@ -268,9 +305,11 @@ int main()
 			bv1.updateOBB(physicsObjects[0].getPos(), physicsObjects[0].getRotate());
 			bv2.updateOBB(physicsObjects[1].getPos(), physicsObjects[1].getRotate());
 			glm::mat2x3 pl = bv1.collisionCheck(bv2);
-			debugParticle.setPos(glm::vec3(pl[1][0], 2.0f, 0.0f));
 			if (bv1.collisionCheck(bv2)[0][0] == bv1.collisionCheck(bv2)[0][0]) //////////////// 2 collision checks ///////////////////
-				paused = true;
+			{
+				debugParticle.setPos(pl[1]);
+				collisionResponse(physicsObjects[0], physicsObjects[1], pl);
+			}
 			///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -313,19 +352,23 @@ int main()
 					applyGroundCollision(rb, colMidpoint);
 				}
 
-				currState[i] = rb.getPos();
+				/*currState[i] = rb.getTranslate() * rb.getRotate();*/
 				i++;
 			}
 			timeAccumulator -= dt;
 			time += dt;
 		}
 
-		if (!paused)
-		{
-			const double alpha = timeAccumulator / dt;
-			for (int i = 0; i < physicsObjects.size(); i++)
-				physicsObjects[i].setPos(alpha * prevState[i] + (1.0 - alpha) * currState[i]);
-		}
+		//if (!paused)
+		//{
+		//	const double alpha = timeAccumulator / dt;
+		//	for (int i = 0; i < physicsObjects.size(); i++)
+		//	{
+		//		physicsObjects[i].setPos(alpha * prevState[i][3] + (1.0 - alpha) * currState[i][3]);
+		//		
+		//		//physicsObjects[i].setRotate(M);
+		//	}
+		//}
 
 		/*
 		**	INTERACTION
