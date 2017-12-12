@@ -51,9 +51,9 @@ const glm::vec3 acc_g = glm::vec3(0.0f, -9.8f, 0.0f);
 
 
 
-struct gameObject
+struct physicsObject
 {
-	Body body;
+	RigidBody rb;
 	BoundingVolume bv;
 };
 
@@ -218,7 +218,6 @@ int main()
 	Shader shader_yellow = Shader("resources/shaders/core.vert", "resources/shaders/core_yellow.frag");
 	Shader shader_red = Shader("resources/shaders/core.vert", "resources/shaders/core_red.frag");
 
-	std::vector<RigidBody> physicsObjects = std::vector<RigidBody>();
 
 	// Debug particle ///////////////////////////
 	Particle debugParticle = Particle();
@@ -226,35 +225,50 @@ int main()
 	Particle debugParticle1 = Particle();
 	debugParticle1.getMesh().setShader(shader_yellow);
 
-	// Rigid bodies
-	physicsObjects.push_back(RigidBody());
-	physicsObjects[0].setMesh(Mesh(Mesh::CUBE));
-	physicsObjects[0].getMesh().setShader(shader_green);
-	physicsObjects[0].setMass(2.0f);
-	physicsObjects[0].scale(glm::vec3(1.0f, 6.0f, 2.0f));
-	physicsObjects[0].setPos(glm::vec3(-4.0f, 5.0f, 0.0f));
-	physicsObjects[0].setCor(0.5f);
-	physicsObjects[0].setVel(glm::vec3(0.8f, 0.0f, 0.0f));
-	physicsObjects[0].setAngVel(glm::vec3(0.0f, 0.0f, 0.3f));
-	physicsObjects[0].addForce(new Gravity());
-	BoundingVolume bv1 = BoundingVolume(physicsObjects[0].getPos(), physicsObjects[0].getRotate()
-		, glm::vec3(physicsObjects[0].getScale()[0][0], physicsObjects[0].getScale()[1][1], physicsObjects[0].getScale()[2][2]) / 2.0f);
+	//std::vector<RigidBody> physicsObjects = std::vector<RigidBody>();
+	//// Rigid bodies
+	//physicsObjects.push_back(RigidBody());
+	//physicsObjects[0].setMesh(Mesh(Mesh::CUBE));
+	//physicsObjects[0].getMesh().setShader(shader_green);
+	//physicsObjects[0].setMass(2.0f);
+	//physicsObjects[0].scale(glm::vec3(1.0f, 6.0f, 2.0f));
+	//physicsObjects[0].setPos(glm::vec3(-4.0f, 5.0f, 0.0f));
+	//physicsObjects[0].setCor(0.5f);
+	//physicsObjects[0].setVel(glm::vec3(0.8f, 0.0f, 0.0f));
+	//physicsObjects[0].setAngVel(glm::vec3(0.0f, 0.0f, 0.3f));
+	//physicsObjects[0].addForce(new Gravity());
+	//BoundingVolume bv1 = BoundingVolume(physicsObjects[0].getPos(), physicsObjects[0].getRotate()
+	//	, glm::vec3(physicsObjects[0].getScale()[0][0], physicsObjects[0].getScale()[1][1], physicsObjects[0].getScale()[2][2]) / 2.0f);
 
-	physicsObjects.push_back(RigidBody());
-	physicsObjects[1].setMesh(Mesh(Mesh::CUBE));
-	physicsObjects[1].getMesh().setShader(shader_green);
-	physicsObjects[1].setMass(2.0f);
-	physicsObjects[1].scale(glm::vec3(1.0f, 6.0f, 2.0f));
-	physicsObjects[1].setPos(glm::vec3(0.0f, 5.0f, 0.0f));
-	physicsObjects[1].setCor(0.5f);
-	physicsObjects[1].addForce(new Gravity());
-	physicsObjects[1].setVel(glm::vec3(-0.8f, 0.0f, 0.0f));
-	//physicsObjects[1].rotate(glm::quarter_pi<float>(), glm::vec3(1.0f, 0.0f, 0.0f));
-	//physicsObjects[1].rotate(glm::quarter_pi<float>() / 2.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-	BoundingVolume bv2 = BoundingVolume(physicsObjects[1].getPos(), physicsObjects[1].getRotate()
-		, glm::vec3(physicsObjects[1].getScale()[0][0], physicsObjects[1].getScale()[1][1], physicsObjects[1].getScale()[2][2]) / 2.0f);
+	//physicsObjects.push_back(RigidBody());
+	//physicsObjects[1].setMesh(Mesh(Mesh::CUBE));
+	//physicsObjects[1].getMesh().setShader(shader_green);
+	//physicsObjects[1].setMass(2.0f);
+	//physicsObjects[1].scale(glm::vec3(1.0f, 6.0f, 2.0f));
+	//physicsObjects[1].setPos(glm::vec3(0.0f, 5.0f, 0.0f));
+	//physicsObjects[1].setCor(0.5f);
+	//physicsObjects[1].addForce(new Gravity());
+	//physicsObjects[1].setVel(glm::vec3(-0.8f, 0.0f, 0.0f));
+	////physicsObjects[1].rotate(glm::quarter_pi<float>(), glm::vec3(1.0f, 0.0f, 0.0f));
+	////physicsObjects[1].rotate(glm::quarter_pi<float>() / 2.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+	//BoundingVolume bv2 = BoundingVolume(physicsObjects[1].getPos(), physicsObjects[1].getRotate()
+	//	, glm::vec3(physicsObjects[1].getScale()[0][0], physicsObjects[1].getScale()[1][1], physicsObjects[1].getScale()[2][2]) / 2.0f);
 
-
+	std::vector<physicsObject> physicsObjects;
+	for (int i = 0; i < 5; i++)
+	{
+		physicsObjects.push_back(physicsObject());
+		physicsObjects[i].rb = RigidBody();
+		physicsObjects[i].rb.setMesh(Mesh(Mesh::CUBE));
+		physicsObjects[i].rb.getMesh().setShader(shader_green);
+		physicsObjects[i].rb.setMass(2.0f);
+		physicsObjects[i].rb.setCor(0.5f);
+		physicsObjects[i].rb.scale(glm::vec3(0.25f, 1.5f, 0.5f));
+		physicsObjects[i].rb.setPos(glm::vec3(-5.0f + (i / 1.0f), 1.5f, 0.0f));
+		physicsObjects[i].rb.addForce(new Gravity());
+		physicsObjects[i].bv = BoundingVolume(physicsObjects[0].rb.getPos(), physicsObjects[0].rb.getRotate()
+			, glm::vec3(physicsObjects[0].rb.getScale()[0][0], physicsObjects[0].rb.getScale()[1][1], physicsObjects[0].rb.getScale()[2][2]) / 2.0f);
+	}
 
 	// Room corners
 	glm::vec3 roomCorner1 = glm::vec3(-10.0f, 0.0f, -10.0f);
@@ -327,51 +341,71 @@ int main()
 			}*/
 
 			// Apply all forces before integrating
-			for (RigidBody &rb : physicsObjects)
+			for (physicsObject &p : physicsObjects)
 			{
-				if (rb.isStatic)
+				if (p.rb.isStatic)
 					continue;
-				rb.setAcc(rb.applyForces(rb.getPos(), rb.getVel()));
+				p.rb.setAcc(p.rb.applyForces(p.rb.getPos(), p.rb.getVel()));
 			}
 
 			int i = 0;
 			// Integrate
-			for (RigidBody &rb : physicsObjects)
+			for (physicsObject &p : physicsObjects)
 			{
 				// Ignore objects marked as static
-				if (rb.isStatic)
+				if (p.rb.isStatic)
 					continue;
 
-				integrate(rb, dt);
+				integrate(p.rb, dt);
 			}
 
 			///////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-			bv1.updateOBB(physicsObjects[0].getPos(), physicsObjects[0].getRotate());
-			bv2.updateOBB(physicsObjects[1].getPos(), physicsObjects[1].getRotate());
-			std::pair<glm::mat2x3, float> result = bv1.collisionCheck(bv2);
-			glm::mat2x3 pl = result.first;
-			if (pl[0][0] == pl[0][0]) //////////////// 2 collision checks ///////////////////
+			for (physicsObject &p : physicsObjects)
 			{
-				debugParticle.setPos(pl[1]);
-				debugParticle1.setPos(pl[1] + pl[0]);
-				collisionResponse(physicsObjects[0], physicsObjects[1], pl, result.second);
+				if (p.bv.getColliderType() == BoundingVolume::OBB)
+					p.bv.updateOBB(p.rb.getPos(), p.rb.getRotate());
 			}
+			if (physicsObjects.size() > 1)
+				for (int i = physicsObjects.size() - 1; i > 1; i--)
+					for (int j = i - 1; j > 0; j--)
+					{
+						std::pair<glm::mat2x3, float> result = physicsObjects[i].bv.collisionCheck(physicsObjects[j].bv);
+						glm::mat2x3 pl = result.first;
+						float d = result.second;
+						if (pl[0][0] == pl[0][0])
+						{
+							debugParticle.setPos(pl[1]);
+							debugParticle1.setPos(pl[1] + pl[0]);
+							collisionResponse(physicsObjects[i].rb, physicsObjects[i].rb, pl, d);
+						}
+					}
+
+
+			//bv1.updateOBB(physicsObjects[0].getPos(), physicsObjects[0].getRotate());
+			//bv2.updateOBB(physicsObjects[1].getPos(), physicsObjects[1].getRotate());
+			//std::pair<glm::mat2x3, float> result = bv1.collisionCheck(bv2);
+			//glm::mat2x3 pl = result.first;
+			//if (pl[0][0] == pl[0][0]) //////////////// 2 collision checks ///////////////////
+			//{
+			//	debugParticle.setPos(pl[1]);
+			//	debugParticle1.setPos(pl[1] + pl[0]);
+			//	collisionResponse(physicsObjects[0], physicsObjects[1], pl, result.second);
+			//}
 			///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 
 			// Collisions with the ground
-			for (RigidBody &rb : physicsObjects)
+			for (physicsObject &p : physicsObjects)
 			{
 				// Collision detection
 				int nOfCollisions = 0;
 				std::vector<glm::vec3> collisionPoints = std::vector<glm::vec3>();
 				std::vector<glm::vec3> worldVertices = std::vector<glm::vec3>();
-				for (int j = 0; j < rb.getMesh().getVertices().size(); j++)
+				for (int j = 0; j < p.rb.getMesh().getVertices().size(); j++)
 				{
-					worldVertices.push_back(rb.getMesh().getModel() * glm::vec4(rb.getMesh().getVertices()[j].getCoord(), 1.0f));
-					worldVertices[j] /= (rb.getMesh().getModel() * glm::vec4(rb.getMesh().getVertices()[j].getCoord(), 1.0f)).w;
+					worldVertices.push_back(p.rb.getMesh().getModel() * glm::vec4(p.rb.getMesh().getVertices()[j].getCoord(), 1.0f));
+					worldVertices[j] /= (p.rb.getMesh().getModel() * glm::vec4(p.rb.getMesh().getVertices()[j].getCoord(), 1.0f)).w;
 				}
 				// Move the rigid body above gorund
 				tmp = glm::vec3(0.0f);
@@ -379,7 +413,7 @@ int main()
 					if (wv[1] < tmp[1])
 						tmp = wv;
 				if (tmp[1] < 0.0f)
-					rb.translate(glm::vec3(0.0f, -tmp[1], 0.0f));
+					p.rb.translate(glm::vec3(0.0f, -tmp[1], 0.0f));
 				// Count number of collisions
 				for (glm::vec3 wv : worldVertices)
 					if (wv[1] <= 0.0f)
@@ -396,7 +430,7 @@ int main()
 				// Apply impulses to collision points
 				if (nOfCollisions > 0)
 				{
-					applyGroundCollision(rb, colMidpoint);
+					applyGroundCollision(p.rb, colMidpoint);
 				}
 
 				/*currState[i] = rb.getTranslate() * rb.getRotate();*/
@@ -432,8 +466,8 @@ int main()
 		// draw groud plane
 		app.draw(plane);
 		// draw particles
-		for (RigidBody rb : physicsObjects)
-			app.draw(rb.getMesh());
+		for (physicsObject p : physicsObjects)
+			app.draw(p.rb.getMesh());
 
 		app.draw(debugParticle.getMesh());
 		app.draw(debugParticle1.getMesh());
