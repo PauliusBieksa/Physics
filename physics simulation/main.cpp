@@ -51,6 +51,13 @@ const glm::vec3 acc_g = glm::vec3(0.0f, -9.8f, 0.0f);
 
 
 
+struct gameObject
+{
+	Body body;
+	BoundingVolume bv;
+};
+
+
 
 // Integrate using semi-implicit Euler integration
 void integrate(Particle &p, double dt)
@@ -92,8 +99,11 @@ void applyImpulse(RigidBody &rb, float impulseMagnitude, glm::vec3 r, glm::vec3 
 
 
 
-void collisionResponse(RigidBody &rb1, RigidBody &rb2, glm::mat2x3 collisionPlane)
+void collisionResponse(RigidBody &rb1, RigidBody &rb2, glm::mat2x3 collisionPlane, float intersectionDistance)
 {
+	intersectionDistance /= 2.0f;
+	rb1.translate(-collisionPlane[0] * intersectionDistance);
+	rb2.translate(collisionPlane[0] * intersectionDistance);
 	glm::vec3 r1 = collisionPlane[1] - rb1.getPos();
 	glm::vec3 r2 = collisionPlane[1] - rb2.getPos();
 	glm::vec3 vr = rb1.getVel() + glm::cross(rb1.getAngVel(), r1) - (rb2.getVel() + glm::cross(rb2.getAngVel(), r2));
@@ -105,6 +115,36 @@ void collisionResponse(RigidBody &rb1, RigidBody &rb2, glm::mat2x3 collisionPlan
 
 	applyImpulse(rb1, jr, r1, collisionPlane[0]);
 	applyImpulse(rb2, -jr, r2, collisionPlane[0]);
+
+	// Friction
+	{
+		// Coulomb's friction model
+		// Calculate tangental velocity
+		glm::vec3 vt = vr - glm::dot(vr, glm::vec3(0.0f, 1.0f, 0.0f)) * glm::vec3(0.0f, 1.0f, 0.0f);
+		float vtl = glm::length(vt);
+		if (vtl == 0.0f)
+			return;
+		// Calculate tangental impulse
+		vt = -0.5f * abs(jr) * vt / vtl;
+		// Calculate max friction for rb1
+		float jtmax = vtl * rb1.getMass() + glm::length(rb1.getAngVel()) / glm::length(rb1.getInvInertia() * glm::cross(r1, vt / glm::length(vt)));
+		if (glm::length2(vt) > jtmax * jtmax)
+		{
+			vt = vt / glm::length(vt) * jtmax;
+			//vtl = jtmax;
+		}
+		if (glm::length2(vt) > 0.0f)
+			applyImpulse(rb1, glm::length(vt), r1, vt / glm::length(vt));
+		// Calculate max friction for rb2
+		jtmax = vtl * rb2.getMass() + glm::length(rb2.getAngVel()) / glm::length(rb2.getInvInertia() * glm::cross(r2, vt / glm::length(vt)));
+		if (glm::length2(vt) > jtmax * jtmax)
+		{
+			vt = vt / glm::length(vt) * jtmax;
+			//vtl = jtmax;
+		}
+		if (glm::length2(vt) > 0.0f)
+			applyImpulse(rb2, glm::length(vt), r2, -vt / glm::length(vt));
+	}
 }
 
 
@@ -118,18 +158,19 @@ void applyGroundCollision(RigidBody &rb, glm::vec3 colPoint)
 
 	// Reduce collision response and reduce spinning when the whelocity of an object is below a threshold
 	float cor = rb.getCor();
-	if (glm::length2(vr) < 1.0f && glm::length2(rb.getVel()) < 0.64f)
-	{
-		cor *= glm::length2(vr);
-		if (glm::length2(vr) < 0.01f && glm::length2(rb.getVel()) < 0.01f)
-			cor = 0.0f;
-		// Recalculate relative velocity
-		//	tmp = rb.getVel() + glm::cross(rb.getAngVel(), r);
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//if (glm::length2(vr) < 1.0f && glm::length2(rb.getVel()) < 0.64f)
+	//{
+	//	cor *= glm::length2(vr);
+	//	if (glm::length2(vr) < 0.01f && glm::length2(rb.getVel()) < 0.01f)
+	//		cor = 0.0f;
+	//	// Recalculate relative velocity
+	//	//	tmp = rb.getVel() + glm::cross(rb.getAngVel(), r);
 
-		// If the velocity og the object is below a threshold, make it static
-		if (glm::length2(rb.getVel()) < 0.025f && glm::length2(rb.getAngVel()) < 0.025f)
-			rb.isStatic = true;
-	}
+	//	// If the velocity og the object is below a threshold, make it static
+	//	if (glm::length2(rb.getVel()) < 0.025f && glm::length2(rb.getAngVel()) < 0.025f)
+	//		rb.isStatic = true;
+	//}
 	// Calculate magnitude of the impulse
 	float jr = -1.0f * (1.0f + cor) * glm::dot(vr, glm::vec3(0.0f, 1.0f, 0.0f));
 	jr /= 1.0f / rb.getMass() + glm::dot(glm::vec3(0.0f, 1.0f, 0.0f), glm::cross(rb.getInvInertia() * glm::cross(r, glm::vec3(0.0f, 1.0f, 0.0f)), r));
@@ -140,16 +181,18 @@ void applyGroundCollision(RigidBody &rb, glm::vec3 colPoint)
 	// Calculate tangental velocity
 	glm::vec3 vt = vr - glm::dot(vr, glm::vec3(0.0f, 1.0f, 0.0f)) * glm::vec3(0.0f, 1.0f, 0.0f);
 	float vtl = glm::length(vt);
+	if (vtl == 0.0f)
+		return;
 	// Calculate tangental impulse
-	vt = -0.6f * abs(jr) * vt / glm::length(vt);
+	vt = -0.6f * abs(jr) * vt / vtl;
 	// Calculate max friction
 	float jtmax = vtl * rb.getMass() + glm::length(rb.getAngVel()) / glm::length(rb.getInvInertia() * glm::cross(r, vt / glm::length(vt)));
 	if (glm::length2(vt) > jtmax * jtmax)
 	{
 		vt = vt / glm::length(vt) * jtmax;
-		vtl = jtmax;
+		//vtl = jtmax;
 	}
-	if (glm::length2(vt))
+	if (glm::length2(vt) > 0.0f)
 		applyImpulse(rb, glm::length(vt), r, vt / glm::length(vt));
 }
 
@@ -180,18 +223,20 @@ int main()
 	// Debug particle ///////////////////////////
 	Particle debugParticle = Particle();
 	debugParticle.getMesh().setShader(shader_red);
+	Particle debugParticle1 = Particle();
+	debugParticle1.getMesh().setShader(shader_yellow);
 
 	// Rigid bodies
 	physicsObjects.push_back(RigidBody());
 	physicsObjects[0].setMesh(Mesh(Mesh::CUBE));
 	physicsObjects[0].getMesh().setShader(shader_green);
 	physicsObjects[0].setMass(2.0f);
-	physicsObjects[0].scale(glm::vec3(2.0f, 6.0f, 2.0f));
+	physicsObjects[0].scale(glm::vec3(1.0f, 6.0f, 2.0f));
 	physicsObjects[0].setPos(glm::vec3(-4.0f, 5.0f, 0.0f));
 	physicsObjects[0].setCor(0.5f);
 	physicsObjects[0].setVel(glm::vec3(0.8f, 0.0f, 0.0f));
-	//physicsObjects[0].setAngVel(glm::vec3(0.0f, 0.0f, 0.3f));
-	//	BoundingVolume bv1 = BoundingVolume(physicsObjects[0].getPos(), physicsObjects[0].getRotate(), glm::vec3(2.0f, 6.0f, 2.0f) / 2.0f);
+	physicsObjects[0].setAngVel(glm::vec3(0.0f, 0.0f, 0.3f));
+	physicsObjects[0].addForce(new Gravity());
 	BoundingVolume bv1 = BoundingVolume(physicsObjects[0].getPos(), physicsObjects[0].getRotate()
 		, glm::vec3(physicsObjects[0].getScale()[0][0], physicsObjects[0].getScale()[1][1], physicsObjects[0].getScale()[2][2]) / 2.0f);
 
@@ -199,13 +244,13 @@ int main()
 	physicsObjects[1].setMesh(Mesh(Mesh::CUBE));
 	physicsObjects[1].getMesh().setShader(shader_green);
 	physicsObjects[1].setMass(2.0f);
-	physicsObjects[1].scale(glm::vec3(2.0f, 3.0f, 2.0f));
+	physicsObjects[1].scale(glm::vec3(1.0f, 6.0f, 2.0f));
 	physicsObjects[1].setPos(glm::vec3(0.0f, 5.0f, 0.0f));
 	physicsObjects[1].setCor(0.5f);
-	//physicsObjects[1].setVel(glm::vec3(-0.8f, 0.0f, 0.0f));
-	physicsObjects[1].rotate(glm::quarter_pi<float>(), glm::vec3(1.0f, 0.0f, 0.0f));
-	physicsObjects[1].rotate(glm::quarter_pi<float>() / 2.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-	//BoundingVolume bv2 = BoundingVolume(physicsObjects[1].getPos(), physicsObjects[1].getRotate(), glm::vec3(2.0f, 3.0f, 2.0f) / 2.0f);
+	physicsObjects[1].addForce(new Gravity());
+	physicsObjects[1].setVel(glm::vec3(-0.8f, 0.0f, 0.0f));
+	//physicsObjects[1].rotate(glm::quarter_pi<float>(), glm::vec3(1.0f, 0.0f, 0.0f));
+	//physicsObjects[1].rotate(glm::quarter_pi<float>() / 2.0f, glm::vec3(0.0f, 0.0f, 1.0f));
 	BoundingVolume bv2 = BoundingVolume(physicsObjects[1].getPos(), physicsObjects[1].getRotate()
 		, glm::vec3(physicsObjects[1].getScale()[0][0], physicsObjects[1].getScale()[1][1], physicsObjects[1].getScale()[2][2]) / 2.0f);
 
@@ -262,7 +307,7 @@ int main()
 		double newTime = (double)glfwGetTime();
 		double frameTime = newTime - currentTime;
 		timeFromStart += frameTime;
-	//	frameTime *= 0.5f;	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//frameTime *= 0.5f;	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 		if (frameTime > 0.25)
 			frameTime = 0.25;
 		currentTime = newTime;
@@ -304,17 +349,19 @@ int main()
 
 			bv1.updateOBB(physicsObjects[0].getPos(), physicsObjects[0].getRotate());
 			bv2.updateOBB(physicsObjects[1].getPos(), physicsObjects[1].getRotate());
-			glm::mat2x3 pl = bv1.collisionCheck(bv2);
-			if (bv1.collisionCheck(bv2)[0][0] == bv1.collisionCheck(bv2)[0][0]) //////////////// 2 collision checks ///////////////////
+			std::pair<glm::mat2x3, float> result = bv1.collisionCheck(bv2);
+			glm::mat2x3 pl = result.first;
+			if (pl[0][0] == pl[0][0]) //////////////// 2 collision checks ///////////////////
 			{
 				debugParticle.setPos(pl[1]);
-				collisionResponse(physicsObjects[0], physicsObjects[1], pl);
+				debugParticle1.setPos(pl[1] + pl[0]);
+				collisionResponse(physicsObjects[0], physicsObjects[1], pl, result.second);
 			}
 			///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 
-			// Collisions
+			// Collisions with the ground
 			for (RigidBody &rb : physicsObjects)
 			{
 				// Collision detection
@@ -389,6 +436,7 @@ int main()
 			app.draw(rb.getMesh());
 
 		app.draw(debugParticle.getMesh());
+		app.draw(debugParticle1.getMesh());
 		app.display();
 
 
