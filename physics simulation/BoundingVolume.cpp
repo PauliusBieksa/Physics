@@ -54,7 +54,7 @@ std::pair<glm::mat2x3, float> BoundingVolume::sphereSphereCheck(SphereCollider o
 	std::pair<glm::mat2x3, float> result;
 
 	float d = m_sphere.getRadius() + other.getRadius();
-	if (glm::length(m_sphere.getPos() - other.getPos()) > d)
+	if (glm::length(m_sphere.getPos() - other.getPos()) <= d)
 	{
 		plane[0] = (other.getPos() - m_sphere.getPos()) / 2.0f;
 		plane[1] = m_sphere.getPos() + plane[0];

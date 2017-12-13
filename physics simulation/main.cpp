@@ -52,10 +52,15 @@ const float sleep_time = 0.2f;
 
 struct physicsObject
 {
+	// Rigid body
 	RigidBody rb;
+	// Narrow phase bounding volume
 	BoundingVolume bv;
-	bool asleep = false;
+	bool asleep = true;
+	// Low motion timer
 	float timer = 0.0f;
+	// Broad phase bounding volume
+	BoundingVolume bpbv;
 };
 
 
@@ -231,8 +236,10 @@ int main()
 		physicsObjects[i].rb.setPos(glm::vec3(-5.0f + (i * 0.85f), 0.75f, 0.0f + (i * 0.25f)));
 		physicsObjects[i].rb.rotate((i * -0.1f), glm::vec3(0.0f, 1.0f, 0.0f));
 		physicsObjects[i].rb.addForce(new Gravity());
-		physicsObjects[i].bv = BoundingVolume(physicsObjects[0].rb.getPos(), physicsObjects[0].rb.getRotate()
-			, glm::vec3(physicsObjects[0].rb.getScale()[0][0], physicsObjects[0].rb.getScale()[1][1], physicsObjects[0].rb.getScale()[2][2]) / 2.0f);
+		physicsObjects[i].bv = BoundingVolume(physicsObjects[i].rb.getPos(), physicsObjects[i].rb.getRotate()
+			, glm::vec3(physicsObjects[i].rb.getScale()[0][0], physicsObjects[i].rb.getScale()[1][1], physicsObjects[i].rb.getScale()[2][2]) / 2.0f);
+		physicsObjects[i].bpbv = BoundingVolume(physicsObjects[i].rb.getPos()
+			, glm::length(glm::vec3(physicsObjects[i].rb.getScale()[0][0], physicsObjects[i].rb.getScale()[1][1], physicsObjects[i].rb.getScale()[2][2])));
 	}
 
 	// Room corners
@@ -309,24 +316,32 @@ int main()
 					{
 						if (!physicsObjects[i].asleep)
 						{
-							std::pair<glm::mat2x3, float> result = physicsObjects[i].bv.collisionCheck(physicsObjects[j].bv);
-							glm::mat2x3 pl = result.first;
-							float d = result.second;
+							glm::mat2x3 pl = physicsObjects[i].bpbv.collisionCheck(physicsObjects[j].bpbv).first;
 							if (pl[0][0] == pl[0][0])
 							{
-								physicsObjects[j].asleep = false;
-								collisionResponse(physicsObjects[i].rb, physicsObjects[j].rb, pl, d, physicsObjects[i].timer);
+								std::pair<glm::mat2x3, float> result = physicsObjects[i].bv.collisionCheck(physicsObjects[j].bv);
+								glm::mat2x3 pl = result.first;
+								float d = result.second;
+								if (pl[0][0] == pl[0][0])
+								{
+									physicsObjects[j].asleep = false;
+									collisionResponse(physicsObjects[i].rb, physicsObjects[j].rb, pl, d, physicsObjects[i].timer);
+								}
 							}
 						}
 						else if (!physicsObjects[j].asleep)
 						{
-							std::pair<glm::mat2x3, float> result = physicsObjects[j].bv.collisionCheck(physicsObjects[i].bv);
-							glm::mat2x3 pl = result.first;
-							float d = result.second;
+							glm::mat2x3 pl = physicsObjects[j].bpbv.collisionCheck(physicsObjects[i].bpbv).first;
 							if (pl[0][0] == pl[0][0])
 							{
-								physicsObjects[i].asleep = false;
-								collisionResponse(physicsObjects[j].rb, physicsObjects[i].rb, pl, d, physicsObjects[j].timer);
+								std::pair<glm::mat2x3, float> result = physicsObjects[j].bv.collisionCheck(physicsObjects[i].bv);
+								glm::mat2x3 pl = result.first;
+								float d = result.second;
+								if (pl[0][0] == pl[0][0])
+								{
+									physicsObjects[i].asleep = false;
+									collisionResponse(physicsObjects[j].rb, physicsObjects[i].rb, pl, d, physicsObjects[j].timer);
+								}
 							}
 						}
 					}
