@@ -46,8 +46,7 @@ struct spring
 
 // Constants
 const glm::vec3 acc_g = glm::vec3(0.0f, -9.8f, 0.0f);
-//const float bounce_damper = 0.96f;
-//const spring sp = { 15.0f, 1.0f, 0.3f };	// values for stiffnes, damper, rest distance
+const float sleep_time = 0.4f;
 
 
 
@@ -55,6 +54,8 @@ struct physicsObject
 {
 	RigidBody rb;
 	BoundingVolume bv;
+	bool asleep = false;
+	float timer = 0.0f;
 };
 
 
@@ -99,7 +100,7 @@ void applyImpulse(RigidBody &rb, float impulseMagnitude, glm::vec3 r, glm::vec3 
 
 
 
-void collisionResponse(RigidBody &rb1, RigidBody &rb2, glm::mat2x3 collisionPlane, float intersectionDistance)
+void collisionResponse(RigidBody &rb1, RigidBody &rb2, glm::mat2x3 collisionPlane, float intersectionDistance, float sleepTimer)
 {
 	intersectionDistance /= 2.0f;
 	rb1.translate(-collisionPlane[0] * intersectionDistance);
@@ -108,7 +109,9 @@ void collisionResponse(RigidBody &rb1, RigidBody &rb2, glm::mat2x3 collisionPlan
 	glm::vec3 r2 = collisionPlane[1] - rb2.getPos();
 	glm::vec3 vr = rb1.getVel() + glm::cross(rb1.getAngVel(), r1) - (rb2.getVel() + glm::cross(rb2.getAngVel(), r2));
 	float jr;
-	jr = -(1 + rb1.getCor()) * glm::dot(vr, collisionPlane[0]);		//////////////////// have a look at CoR for both rigid bodies ////////////////
+	float cor = rb1.getCor() > rb2.getCor() ? rb1.getCor() : rb2.getCor();
+	cor *= (sleep_time - sleepTimer) / sleep_time;
+	jr = -(1 + cor) * glm::dot(vr, collisionPlane[0]);
 	jr /= 1.0f / rb1.getMass() + 1.0f / rb2.getMass()
 		+ glm::dot(collisionPlane[0], glm::cross((rb1.getInvInertia() * glm::cross(r1, collisionPlane[0])), r1))
 		+ glm::dot(collisionPlane[0], glm::cross((rb2.getInvInertia() * glm::cross(r2, collisionPlane[0])), r2));
@@ -150,28 +153,17 @@ void collisionResponse(RigidBody &rb1, RigidBody &rb2, glm::mat2x3 collisionPlan
 
 
 // Calculates and applies the collision impluse with friction
-void applyGroundCollision(RigidBody &rb, glm::vec3 colPoint)
+void applyGroundCollision(RigidBody &rb, glm::vec3 colPoint, float sleepTimer)
 {
 	glm::vec3 r = colPoint - rb.getPos();
 	// Calculate relative velocity
 	glm::vec3 vr = rb.getVel() + glm::cross(rb.getAngVel(), r);
 
-	// Reduce collision response and reduce spinning when the whelocity of an object is below a threshold
+	// Reduce collision response and reduce spinning when the velocity of an object is below a threshold
 	float cor = rb.getCor();
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	//if (glm::length2(vr) < 1.0f && glm::length2(rb.getVel()) < 0.64f)
-	//{
-	//	cor *= glm::length2(vr);
-	//	if (glm::length2(vr) < 0.01f && glm::length2(rb.getVel()) < 0.01f)
-	//		cor = 0.0f;
-	//	// Recalculate relative velocity
-	//	//	tmp = rb.getVel() + glm::cross(rb.getAngVel(), r);
+	cor *= (sleep_time - sleepTimer) / sleep_time;
 
-	//	// If the velocity og the object is below a threshold, make it static
-	//	if (glm::length2(rb.getVel()) < 0.025f && glm::length2(rb.getAngVel()) < 0.025f)
-	//		rb.isStatic = true;
-	//}
-	// Calculate magnitude of the impulse
+
 	float jr = -1.0f * (1.0f + cor) * glm::dot(vr, glm::vec3(0.0f, 1.0f, 0.0f));
 	jr /= 1.0f / rb.getMass() + glm::dot(glm::vec3(0.0f, 1.0f, 0.0f), glm::cross(rb.getInvInertia() * glm::cross(r, glm::vec3(0.0f, 1.0f, 0.0f)), r));
 	// Apply the impulse
@@ -225,37 +217,9 @@ int main()
 	Particle debugParticle1 = Particle();
 	debugParticle1.getMesh().setShader(shader_yellow);
 
-	//std::vector<RigidBody> physicsObjects = std::vector<RigidBody>();
-	//// Rigid bodies
-	//physicsObjects.push_back(RigidBody());
-	//physicsObjects[0].setMesh(Mesh(Mesh::CUBE));
-	//physicsObjects[0].getMesh().setShader(shader_green);
-	//physicsObjects[0].setMass(2.0f);
-	//physicsObjects[0].scale(glm::vec3(1.0f, 6.0f, 2.0f));
-	//physicsObjects[0].setPos(glm::vec3(-4.0f, 5.0f, 0.0f));
-	//physicsObjects[0].setCor(0.5f);
-	//physicsObjects[0].setVel(glm::vec3(0.8f, 0.0f, 0.0f));
-	//physicsObjects[0].setAngVel(glm::vec3(0.0f, 0.0f, 0.3f));
-	//physicsObjects[0].addForce(new Gravity());
-	//BoundingVolume bv1 = BoundingVolume(physicsObjects[0].getPos(), physicsObjects[0].getRotate()
-	//	, glm::vec3(physicsObjects[0].getScale()[0][0], physicsObjects[0].getScale()[1][1], physicsObjects[0].getScale()[2][2]) / 2.0f);
-
-	//physicsObjects.push_back(RigidBody());
-	//physicsObjects[1].setMesh(Mesh(Mesh::CUBE));
-	//physicsObjects[1].getMesh().setShader(shader_green);
-	//physicsObjects[1].setMass(2.0f);
-	//physicsObjects[1].scale(glm::vec3(1.0f, 6.0f, 2.0f));
-	//physicsObjects[1].setPos(glm::vec3(0.0f, 5.0f, 0.0f));
-	//physicsObjects[1].setCor(0.5f);
-	//physicsObjects[1].addForce(new Gravity());
-	//physicsObjects[1].setVel(glm::vec3(-0.8f, 0.0f, 0.0f));
-	////physicsObjects[1].rotate(glm::quarter_pi<float>(), glm::vec3(1.0f, 0.0f, 0.0f));
-	////physicsObjects[1].rotate(glm::quarter_pi<float>() / 2.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-	//BoundingVolume bv2 = BoundingVolume(physicsObjects[1].getPos(), physicsObjects[1].getRotate()
-	//	, glm::vec3(physicsObjects[1].getScale()[0][0], physicsObjects[1].getScale()[1][1], physicsObjects[1].getScale()[2][2]) / 2.0f);
 
 	std::vector<physicsObject> physicsObjects;
-	for (int i = 0; i < 5; i++)
+	for (int i = 0; i < 10; i++)
 	{
 		physicsObjects.push_back(physicsObject());
 		physicsObjects[i].rb = RigidBody();
@@ -264,7 +228,7 @@ int main()
 		physicsObjects[i].rb.setMass(2.0f);
 		physicsObjects[i].rb.setCor(0.5f);
 		physicsObjects[i].rb.scale(glm::vec3(0.25f, 1.5f, 0.5f));
-		physicsObjects[i].rb.setPos(glm::vec3(-5.0f + (i / 1.0f), 1.5f, 0.0f));
+		physicsObjects[i].rb.setPos(glm::vec3(-5.0f + (i * 0.8f), 1.5f, 0.0f));
 		physicsObjects[i].rb.addForce(new Gravity());
 		physicsObjects[i].bv = BoundingVolume(physicsObjects[0].rb.getPos(), physicsObjects[0].rb.getRotate()
 			, glm::vec3(physicsObjects[0].rb.getScale()[0][0], physicsObjects[0].rb.getScale()[1][1], physicsObjects[0].rb.getScale()[2][2]) / 2.0f);
@@ -275,8 +239,6 @@ int main()
 	glm::vec3 roomCorner2 = glm::vec3(10.0f, 10.0f, 10.0f);
 
 
-
-	////////////////////////////////////////////////////////////////////////////////
 	// Variables for storing temporary values
 	glm::vec3 tmp = glm::vec3(0.0f, 0.0f, 0.0f);
 
@@ -285,38 +247,13 @@ int main()
 	double dt = 0.01;
 	double currentTime = (double)glfwGetTime();
 	double timeAccumulator = 0.0;
-
-	// State variables to store positions for interpolation
-	//std::vector<glm::mat4> prevState;
-	//std::vector<glm::mat4> currState;
-	////std::vector<glm::vec3> prevState;
-	////std::vector<glm::vec3> currState;
-	//for (RigidBody &rb : physicsObjects)
-	//	prevState.push_back(rb.getTranslate() * rb.getRotate());
-	//for (RigidBody &rb : physicsObjects)
-	//	currState.push_back(rb.getTranslate() * rb.getRotate());
-	/*
-	for (RigidBody &rb : physicsObjects)
-		prevState.push_back(rb.getPos());
-	for (RigidBody &rb : physicsObjects)
-		currState.push_back(rb.getPos());*/
-
 	double timeFromStart = 0.0f;
-	///////////////////////////////////////////////////////////////////////////////
 
 
-	bool paused = false;
+	bool applied = false;
 	// Game loop
 	while (!glfwWindowShouldClose(app.getWindow()))
 	{
-		// Reseting the positions of particles to be calculated on full steps
-		//for (int i = 0; i < currState.size(); i++)
-		//{
-		//	physicsObjects[i].setPos(currState[i][3]);
-		//	// Set rotate without the translate values
-		//	physicsObjects[i].setRotate(glm::mat4(glm::mat3(currState[i])));
-		//}
-
 		// Timekeeping
 		double newTime = (double)glfwGetTime();
 		double frameTime = newTime - currentTime;
@@ -334,70 +271,134 @@ int main()
 		//while (timeAccumulator >= dt && !paused)
 		while (timeAccumulator >= dt)
 		{
-			// Update prevState
-			/*for (int i = 0; i < physicsObjects.size(); i++)
+			if (timeFromStart > 3.0f && !applied)
 			{
-				prevState[i] = physicsObjects[i].getTranslate() * physicsObjects[i].getRotate();
-			}*/
+				applied = true;
+				physicsObjects[0].asleep = false;
+				physicsObjects[0].timer = 0.0f;
+				applyImpulse(physicsObjects[0].rb, 3.0f, glm::vec3(-4.0f, 1.5f, 0.0f) - physicsObjects[0].rb.getPos(), glm::vec3(1.0f, 0.0f, 0.0f));
+			}
 
 			// Apply all forces before integrating
 			for (physicsObject &p : physicsObjects)
 			{
-				if (p.rb.isStatic)
+				if (p.rb.isStatic || p.asleep)
 					continue;
 				p.rb.setAcc(p.rb.applyForces(p.rb.getPos(), p.rb.getVel()));
 			}
 
-			int i = 0;
 			// Integrate
 			for (physicsObject &p : physicsObjects)
 			{
 				// Ignore objects marked as static
-				if (p.rb.isStatic)
+				if (p.rb.isStatic || p.asleep)
 					continue;
-
 				integrate(p.rb, dt);
 			}
 
-			///////////////////////////////////////////////////////////////////////////////////////////////////////////
+			// Collision detection between bodies
 			for (physicsObject &p : physicsObjects)
 			{
 				if (p.bv.getColliderType() == BoundingVolume::OBB)
 					p.bv.updateOBB(p.rb.getPos(), p.rb.getRotate());
 			}
 			if (physicsObjects.size() > 1)
-				for (int i = physicsObjects.size() - 1; i > 1; i--)
-					for (int j = i - 1; j > 0; j--)
+				for (int i = physicsObjects.size() - 1; i >= 1; i--)
+					for (int j = i - 1; j >= 0; j--)
 					{
-						std::pair<glm::mat2x3, float> result = physicsObjects[i].bv.collisionCheck(physicsObjects[j].bv);
-						glm::mat2x3 pl = result.first;
-						float d = result.second;
-						if (pl[0][0] == pl[0][0])
+						if (!physicsObjects[i].asleep)
 						{
-							debugParticle.setPos(pl[1]);
-							debugParticle1.setPos(pl[1] + pl[0]);
-							collisionResponse(physicsObjects[i].rb, physicsObjects[i].rb, pl, d);
+							std::pair<glm::mat2x3, float> result = physicsObjects[i].bv.collisionCheck(physicsObjects[j].bv);
+							glm::mat2x3 pl = result.first;
+							float d = result.second;
+							if (pl[0][0] == pl[0][0])
+							{
+								if (glm::length2(physicsObjects[i].rb.getVel()) < 0.25f)
+								{
+									if (glm::length2(physicsObjects[i].rb.getAngVel()) < 0.25f)
+										physicsObjects[i].timer += dt;
+									physicsObjects[i].rb.setAngVel(physicsObjects[i].rb.getAngVel() * 0.98f);
+								}
+								else
+									physicsObjects[i].timer = 0.0f;
+								if (physicsObjects[i].timer >= sleep_time)
+									physicsObjects[i].asleep = true;
+								if (glm::length2(physicsObjects[i].rb.getVel()) < 0.25f)
+								{
+									if (glm::length2(physicsObjects[i].rb.getAngVel()) < 0.25f)
+										physicsObjects[i].timer += dt;
+									physicsObjects[i].rb.setAngVel(physicsObjects[i].rb.getAngVel() * 0.98f);
+								}
+								else
+									physicsObjects[i].timer = 0.0f;
+								if (physicsObjects[i].timer >= sleep_time)
+									physicsObjects[i].asleep = true;
+
+
+								physicsObjects[j].asleep = false;
+								debugParticle.setPos(pl[1]);
+								debugParticle1.setPos(pl[1] + pl[0]);
+								collisionResponse(physicsObjects[i].rb, physicsObjects[j].rb, pl, d, physicsObjects[i].timer);
+
+
+							}
+						}
+						else if (!physicsObjects[j].asleep)
+						{
+							std::pair<glm::mat2x3, float> result = physicsObjects[j].bv.collisionCheck(physicsObjects[i].bv);
+							glm::mat2x3 pl = result.first;
+							float d = result.second;
+							if (pl[0][0] == pl[0][0])
+							{
+								if (glm::length2(physicsObjects[i].rb.getVel()) < 0.25f)
+								{
+									if (glm::length2(physicsObjects[i].rb.getAngVel()) < 0.25f)
+										physicsObjects[i].timer += dt;
+									physicsObjects[i].rb.setAngVel(physicsObjects[i].rb.getAngVel() * 0.98f);
+								}
+								else
+									physicsObjects[i].timer = 0.0f;
+								if (physicsObjects[i].timer >= sleep_time)
+									physicsObjects[i].asleep = true;
+								if (glm::length2(physicsObjects[i].rb.getVel()) < 0.25f)
+								{
+									if (glm::length2(physicsObjects[i].rb.getAngVel()) < 0.25f)
+										physicsObjects[i].timer += dt;
+									physicsObjects[i].rb.setAngVel(physicsObjects[i].rb.getAngVel() * 0.98f);
+								}
+								else
+									physicsObjects[i].timer = 0.0f;
+								if (physicsObjects[i].timer >= sleep_time)
+									physicsObjects[i].asleep = true;
+
+
+								physicsObjects[i].asleep = false;
+								debugParticle.setPos(pl[1]);
+								debugParticle1.setPos(pl[1] + pl[0]);
+								collisionResponse(physicsObjects[j].rb, physicsObjects[i].rb, pl, d, physicsObjects[j].timer);
+
+
+							}
 						}
 					}
-
-
-			//bv1.updateOBB(physicsObjects[0].getPos(), physicsObjects[0].getRotate());
-			//bv2.updateOBB(physicsObjects[1].getPos(), physicsObjects[1].getRotate());
-			//std::pair<glm::mat2x3, float> result = bv1.collisionCheck(bv2);
-			//glm::mat2x3 pl = result.first;
-			//if (pl[0][0] == pl[0][0]) //////////////// 2 collision checks ///////////////////
-			//{
-			//	debugParticle.setPos(pl[1]);
-			//	debugParticle1.setPos(pl[1] + pl[0]);
-			//	collisionResponse(physicsObjects[0], physicsObjects[1], pl, result.second);
-			//}
-			///////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 
 			// Collisions with the ground
 			for (physicsObject &p : physicsObjects)
 			{
+				if (p.asleep)
+					continue;
+				if (glm::length2(p.rb.getVel()) < 0.16f)
+				{
+					if (glm::length2(p.rb.getAngVel()) < 0.25f)
+						p.timer += dt;
+					p.rb.setAngVel(p.rb.getAngVel() * 0.9f);
+				}
+				else
+					p.timer = 0.0f;
+				if (p.timer >= sleep_time)
+					p.asleep = true;
+
 				// Collision detection
 				int nOfCollisions = 0;
 				std::vector<glm::vec3> collisionPoints = std::vector<glm::vec3>();
@@ -430,30 +431,13 @@ int main()
 				// Apply impulses to collision points
 				if (nOfCollisions > 0)
 				{
-					applyGroundCollision(p.rb, colMidpoint);
+					applyGroundCollision(p.rb, colMidpoint, p.timer);
 				}
-
-				/*currState[i] = rb.getTranslate() * rb.getRotate();*/
-				i++;
 			}
 			timeAccumulator -= dt;
 			time += dt;
 		}
 
-		//if (!paused)
-		//{
-		//	const double alpha = timeAccumulator / dt;
-		//	for (int i = 0; i < physicsObjects.size(); i++)
-		//	{
-		//		physicsObjects[i].setPos(alpha * prevState[i][3] + (1.0 - alpha) * currState[i][3]);
-		//		
-		//		//physicsObjects[i].setRotate(M);
-		//	}
-		//}
-
-		/*
-		**	INTERACTION
-		*/
 		// Manage interaction
 		app.doMovement(frameTime);
 

@@ -353,9 +353,8 @@ std::pair<glm::mat2x3, float> BoundingVolume::OBBOBBCheck(OBBCollider other)
 		for (int i = 0; i < 8; i++)
 		{
 			// v * R[n, yn, zn]
-			rotatedA[i] = R * vertsA[i] + m_OBB.getPos();// -plane[1]; // can be simplified
-			rotatedB[i] = R * vertsB[i] + other.getPos();// -plane[1];
-
+			rotatedA[i] = R * vertsA[i] + m_OBB.getPos();
+			rotatedB[i] = R * vertsB[i] + other.getPos();
 			// Get limits of intersection in R[n, yn, zn] coordinate frame
 			// y
 			if (rotatedA[i][1] < rotatedA[aMinY][1])
@@ -383,7 +382,6 @@ std::pair<glm::mat2x3, float> BoundingVolume::OBBOBBCheck(OBBCollider other)
 				rb = rotatedB[i][0];
 		}
 		rb = rb - other.getPos()[0];
-	//	result.second = hla[0] + rb - glm::dot(plane[0], t);
 		if (hla[0] < rb)
 		{
 			plane[1] = plane[0] * (hla[0] - minD / 2.0f);
@@ -406,9 +404,8 @@ std::pair<glm::mat2x3, float> BoundingVolume::OBBOBBCheck(OBBCollider other)
 		for (int i = 0; i < 8; i++)
 		{
 			// v * R[n, yn, zn]
-			rotatedA[i] = R * vertsA[i] + m_OBB.getPos();// -plane[1]; // can be simplified
-			rotatedB[i] = R * vertsB[i] + other.getPos();// -plane[1];
-
+			rotatedA[i] = R * vertsA[i] + m_OBB.getPos();
+			rotatedB[i] = R * vertsB[i] + other.getPos();
 			// Get limits of intersection in R[n, yn, zn] coordinate frame
 			// y
 			if (rotatedA[i][1] < rotatedA[aMinY][1])
@@ -436,7 +433,6 @@ std::pair<glm::mat2x3, float> BoundingVolume::OBBOBBCheck(OBBCollider other)
 				rb = rotatedB[i][0];
 		}
 		rb = rb - other.getPos()[0];
-	//	result.second = hla[1] + rb - glm::dot(plane[0], t);
 		if (hla[1] < rb)
 		{
 			plane[1] = plane[0] * (hla[1] - minD / 2.0f);
@@ -459,9 +455,8 @@ std::pair<glm::mat2x3, float> BoundingVolume::OBBOBBCheck(OBBCollider other)
 		for (int i = 0; i < 8; i++)
 		{
 			// v * R[n, yn, zn]
-			rotatedA[i] = R * vertsA[i] + m_OBB.getPos();// -plane[1]; // can be simplified
-			rotatedB[i] = R * vertsB[i] + other.getPos();// -plane[1];
-
+			rotatedA[i] = R * vertsA[i] + m_OBB.getPos();
+			rotatedB[i] = R * vertsB[i] + other.getPos();
 			// Get limits of intersection in R[n, yn, zn] coordinate frame
 			// y
 			if (rotatedA[i][1] < rotatedA[aMinY][1])
@@ -489,7 +484,6 @@ std::pair<glm::mat2x3, float> BoundingVolume::OBBOBBCheck(OBBCollider other)
 				rb = rotatedB[i][0];
 		}
 		rb = rb - other.getPos()[0];
-	//	result.second = hla[2] + rb - glm::dot(plane[0], t);
 		if (hla[2] < rb)
 			plane[1] = plane[0] * (hla[2] - minD / 2.0f);
 		else
@@ -507,9 +501,8 @@ std::pair<glm::mat2x3, float> BoundingVolume::OBBOBBCheck(OBBCollider other)
 		for (int i = 0; i < 8; i++)
 		{
 			// v * R[n, yn, zn]
-			rotatedA[i] = R * vertsA[i] + m_OBB.getPos();// -plane[1]; // can be simplified
-			rotatedB[i] = R * vertsB[i] + other.getPos();// -plane[1];
-
+			rotatedA[i] = R * vertsA[i] + m_OBB.getPos();
+			rotatedB[i] = R * vertsB[i] + other.getPos();
 			// Get limits of intersection in R[n, yn, zn] coordinate frame
 			// y
 			if (rotatedA[i][1] < rotatedA[aMinY][1])
@@ -546,7 +539,6 @@ std::pair<glm::mat2x3, float> BoundingVolume::OBBOBBCheck(OBBCollider other)
 				rb = rotatedB[i][0];
 		}
 		rb = rb - other.getPos()[0];
-	//	result.second = ra + rb - glm::dot(plane[0], t);
 		if (ra < rb)
 		{
 			plane[1] = plane[0] * (ra - minD / 2.0f);
@@ -569,9 +561,8 @@ std::pair<glm::mat2x3, float> BoundingVolume::OBBOBBCheck(OBBCollider other)
 		for (int i = 0; i < 8; i++)
 		{
 			// v * R[n, yn, zn]
-			rotatedA[i] = R * vertsA[i] + m_OBB.getPos();// -plane[1]; // can be simplified
-			rotatedB[i] = R * vertsB[i] + other.getPos();// -plane[1];
-
+			rotatedA[i] = R * vertsA[i] + m_OBB.getPos();
+			rotatedB[i] = R * vertsB[i] + other.getPos();
 			// Get limits of intersection in R[n, yn, zn] coordinate frame
 			// y
 			if (rotatedA[i][1] < rotatedA[aMinY][1])
@@ -608,8 +599,6 @@ std::pair<glm::mat2x3, float> BoundingVolume::OBBOBBCheck(OBBCollider other)
 				rb = rotatedB[i][0];
 		}
 		rb = rb - other.getPos()[0];
-	//	result.second = ra + rb - glm::dot(plane[0], t);
-
 		if (ra < rb)
 		{
 			plane[1] = plane[0] * (ra - minD / 2.0f);
@@ -632,9 +621,8 @@ std::pair<glm::mat2x3, float> BoundingVolume::OBBOBBCheck(OBBCollider other)
 		for (int i = 0; i < 8; i++)
 		{
 			// v * R[n, yn, zn]
-			rotatedA[i] = R * vertsA[i] + m_OBB.getPos();// -plane[1]; // can be simplified
-			rotatedB[i] = R * vertsB[i] + other.getPos();// -plane[1];
-
+			rotatedA[i] = R * vertsA[i] + m_OBB.getPos();
+			rotatedB[i] = R * vertsB[i] + other.getPos();
 			// Get limits of intersection in R[n, yn, zn] coordinate frame
 			// y
 			if (rotatedA[i][1] < rotatedA[aMinY][1])
@@ -671,8 +659,6 @@ std::pair<glm::mat2x3, float> BoundingVolume::OBBOBBCheck(OBBCollider other)
 				rb = rotatedB[i][0];
 		}
 		rb = rb - other.getPos()[0];
-	//	result.second = ra + rb - glm::dot(plane[0], t);
-
 		if (ra < rb)
 		{
 			plane[1] = plane[0] * (ra - minD / 2.0f);
@@ -696,9 +682,8 @@ std::pair<glm::mat2x3, float> BoundingVolume::OBBOBBCheck(OBBCollider other)
 		for (int i = 0; i < 8; i++)
 		{
 			// v * R[n, yn, zn]
-			rotatedA[i] = R * vertsA[i] + m_OBB.getPos();// -plane[1]; // can be simplified
-			rotatedB[i] = R * vertsB[i] + other.getPos();// -plane[1];
-
+			rotatedA[i] = R * vertsA[i] + m_OBB.getPos();
+			rotatedB[i] = R * vertsB[i] + other.getPos();
 			// Get limits of intersection in R[n, yn, zn] coordinate frame
 			// y
 			if (rotatedA[i][1] < rotatedA[aMinY][1])
@@ -735,8 +720,6 @@ std::pair<glm::mat2x3, float> BoundingVolume::OBBOBBCheck(OBBCollider other)
 				rb = rotatedB[i][0];
 		}
 		rb = rb - other.getPos()[0];
-//		result.second = ra + rb - glm::dot(plane[0], t);
-
 		if (ra < rb)
 		{
 			plane[1] = plane[0] * (ra - minD / 2.0f);
@@ -760,9 +743,8 @@ std::pair<glm::mat2x3, float> BoundingVolume::OBBOBBCheck(OBBCollider other)
 		for (int i = 0; i < 8; i++)
 		{
 			// v * R[n, yn, zn]
-			rotatedA[i] = R * vertsA[i] + m_OBB.getPos();// -plane[1]; // can be simplified
-			rotatedB[i] = R * vertsB[i] + other.getPos();// -plane[1];
-
+			rotatedA[i] = R * vertsA[i] + m_OBB.getPos();
+			rotatedB[i] = R * vertsB[i] + other.getPos();
 			// Get limits of intersection in R[n, yn, zn] coordinate frame
 			// y
 			if (rotatedA[i][1] < rotatedA[aMinY][1])
@@ -799,8 +781,6 @@ std::pair<glm::mat2x3, float> BoundingVolume::OBBOBBCheck(OBBCollider other)
 				rb = rotatedB[i][0];
 		}
 		rb = rb - other.getPos()[0];
-	//	result.second = ra + rb - glm::dot(plane[0], t);
-
 		if (ra < rb)
 		{
 			plane[1] = plane[0] * (ra - minD / 2.0f);
@@ -824,9 +804,8 @@ std::pair<glm::mat2x3, float> BoundingVolume::OBBOBBCheck(OBBCollider other)
 		for (int i = 0; i < 8; i++)
 		{
 			// v * R[n, yn, zn]
-			rotatedA[i] = R * vertsA[i] + m_OBB.getPos();// -plane[1]; // can be simplified
-			rotatedB[i] = R * vertsB[i] + other.getPos();// -plane[1];
-
+			rotatedA[i] = R * vertsA[i] + m_OBB.getPos();
+			rotatedB[i] = R * vertsB[i] + other.getPos();
 			// Get limits of intersection in R[n, yn, zn] coordinate frame
 			// y
 			if (rotatedA[i][1] < rotatedA[aMinY][1])
@@ -863,8 +842,6 @@ std::pair<glm::mat2x3, float> BoundingVolume::OBBOBBCheck(OBBCollider other)
 				rb = rotatedB[i][0];
 		}
 		rb = rb - other.getPos()[0];
-	//	result.second = ra + rb - glm::dot(plane[0], t);
-
 		if (ra < rb)
 		{
 			plane[1] = plane[0] * (ra - minD / 2.0f);
@@ -888,9 +865,8 @@ std::pair<glm::mat2x3, float> BoundingVolume::OBBOBBCheck(OBBCollider other)
 		for (int i = 0; i < 8; i++)
 		{
 			// v * R[n, yn, zn]
-			rotatedA[i] = R * vertsA[i] + m_OBB.getPos();// -plane[1]; // can be simplified
-			rotatedB[i] = R * vertsB[i] + other.getPos();// -plane[1];
-
+			rotatedA[i] = R * vertsA[i] + m_OBB.getPos();
+			rotatedB[i] = R * vertsB[i] + other.getPos();
 			// Get limits of intersection in R[n, yn, zn] coordinate frame
 			// y
 			if (rotatedA[i][1] < rotatedA[aMinY][1])
@@ -927,8 +903,6 @@ std::pair<glm::mat2x3, float> BoundingVolume::OBBOBBCheck(OBBCollider other)
 				rb = rotatedB[i][0];
 		}
 		rb = rb - other.getPos()[0];
-//		result.second = ra + rb - glm::dot(plane[0], t);
-
 		if (ra < rb)
 		{
 			plane[1] = plane[0] * (ra - minD / 2.0f);
@@ -952,9 +926,8 @@ std::pair<glm::mat2x3, float> BoundingVolume::OBBOBBCheck(OBBCollider other)
 		for (int i = 0; i < 8; i++)
 		{
 			// v * R[n, yn, zn]
-			rotatedA[i] = R * vertsA[i] + m_OBB.getPos();// -plane[1]; // can be simplified
-			rotatedB[i] = R * vertsB[i] + other.getPos();// -plane[1];
-
+			rotatedA[i] = R * vertsA[i] + m_OBB.getPos();
+			rotatedB[i] = R * vertsB[i] + other.getPos();
 			// Get limits of intersection in R[n, yn, zn] coordinate frame
 			// y
 			if (rotatedA[i][1] < rotatedA[aMinY][1])
@@ -991,8 +964,6 @@ std::pair<glm::mat2x3, float> BoundingVolume::OBBOBBCheck(OBBCollider other)
 				rb = rotatedB[i][0];
 		}
 		rb = rb - other.getPos()[0];
-	//	result.second = ra + rb - glm::dot(plane[0], t);
-
 		if (ra < rb)
 		{
 			plane[1] = plane[0] * (ra - minD / 2.0f);
@@ -1016,9 +987,8 @@ std::pair<glm::mat2x3, float> BoundingVolume::OBBOBBCheck(OBBCollider other)
 		for (int i = 0; i < 8; i++)
 		{
 			// v * R[n, yn, zn]
-			rotatedA[i] = R * vertsA[i] + m_OBB.getPos();// -plane[1]; // can be simplified
-			rotatedB[i] = R * vertsB[i] + other.getPos();// -plane[1];
-
+			rotatedA[i] = R * vertsA[i] + m_OBB.getPos();
+			rotatedB[i] = R * vertsB[i] + other.getPos();
 			// Get limits of intersection in R[n, yn, zn] coordinate frame
 			// y
 			if (rotatedA[i][1] < rotatedA[aMinY][1])
@@ -1055,8 +1025,6 @@ std::pair<glm::mat2x3, float> BoundingVolume::OBBOBBCheck(OBBCollider other)
 				rb = rotatedB[i][0];
 		}
 		rb = rb - other.getPos()[0];
-	//	result.second = ra + rb - glm::dot(plane[0], t);
-
 		if (ra < rb)
 		{
 			plane[1] = plane[0] * (ra - minD / 2.0f);
@@ -1080,9 +1048,8 @@ std::pair<glm::mat2x3, float> BoundingVolume::OBBOBBCheck(OBBCollider other)
 		for (int i = 0; i < 8; i++)
 		{
 			// v * R[n, yn, zn]
-			rotatedA[i] = R * vertsA[i] + m_OBB.getPos();// -plane[1]; // can be simplified
-			rotatedB[i] = R * vertsB[i] + other.getPos();// -plane[1];
-
+			rotatedA[i] = R * vertsA[i] + m_OBB.getPos();
+			rotatedB[i] = R * vertsB[i] + other.getPos();
 			// Get limits of intersection in R[n, yn, zn] coordinate frame
 			// y
 			if (rotatedA[i][1] < rotatedA[aMinY][1])
@@ -1119,8 +1086,6 @@ std::pair<glm::mat2x3, float> BoundingVolume::OBBOBBCheck(OBBCollider other)
 				rb = rotatedB[i][0];
 		}
 		rb = rb - other.getPos()[0];
-	//	result.second = ra + rb - glm::dot(plane[0], t);
-
 		if (ra < rb)
 		{
 			plane[1] = plane[0] * (ra - minD / 2.0f);
@@ -1144,9 +1109,8 @@ std::pair<glm::mat2x3, float> BoundingVolume::OBBOBBCheck(OBBCollider other)
 		for (int i = 0; i < 8; i++)
 		{
 			// v * R[n, yn, zn]
-			rotatedA[i] = R * vertsA[i] + m_OBB.getPos();// -plane[1]; // can be simplified
-			rotatedB[i] = R * vertsB[i] + other.getPos();// -plane[1];
-
+			rotatedA[i] = R * vertsA[i] + m_OBB.getPos();
+			rotatedB[i] = R * vertsB[i] + other.getPos();
 			// Get limits of intersection in R[n, yn, zn] coordinate frame
 			// y
 			if (rotatedA[i][1] < rotatedA[aMinY][1])
@@ -1183,8 +1147,6 @@ std::pair<glm::mat2x3, float> BoundingVolume::OBBOBBCheck(OBBCollider other)
 				rb = rotatedB[i][0];
 		}
 		rb = rb - other.getPos()[0];
-	//	result.second = ra + rb - glm::dot(plane[0], t);
-
 		if (ra < rb)
 		{
 			plane[1] = plane[0] * (ra - minD / 2.0f);
@@ -1208,9 +1170,8 @@ std::pair<glm::mat2x3, float> BoundingVolume::OBBOBBCheck(OBBCollider other)
 		for (int i = 0; i < 8; i++)
 		{
 			// v * R[n, yn, zn]
-			rotatedA[i] = R * vertsA[i] + m_OBB.getPos();// -plane[1]; // can be simplified
-			rotatedB[i] = R * vertsB[i] + other.getPos();// -plane[1];
-
+			rotatedA[i] = R * vertsA[i] + m_OBB.getPos();
+			rotatedB[i] = R * vertsB[i] + other.getPos();
 			// Get limits of intersection in R[n, yn, zn] coordinate frame
 			// y
 			if (rotatedA[i][1] < rotatedA[aMinY][1])
@@ -1231,8 +1192,6 @@ std::pair<glm::mat2x3, float> BoundingVolume::OBBOBBCheck(OBBCollider other)
 			else if (rotatedB[i][2] > rotatedB[bMaxZ][2])
 				bMaxZ = i;
 		}
-		ra = hla[0] * absR[1][2] + hla[1] * absR[0][2];
-
 		ra = rotatedA[0][0];
 		for (int i = 1; i < 8; i++)
 		{
@@ -1247,8 +1206,6 @@ std::pair<glm::mat2x3, float> BoundingVolume::OBBOBBCheck(OBBCollider other)
 				rb = rotatedB[i][0];
 		}
 		rb = rb - other.getPos()[0];
-	//	result.second = ra + rb - glm::dot(plane[0], t);
-
 		if (ra < rb)
 		{
 			plane[1] = plane[0] * (ra - minD / 2.0f);
@@ -1282,6 +1239,11 @@ std::pair<glm::mat2x3, float> BoundingVolume::OBBOBBCheck(OBBCollider other)
 			nOfCollisionsB++;
 			collisionPointB += vertsB[i] + other.getPos();
 		}
+	}
+	if (nOfCollisionsA == nOfCollisionsB && nOfCollisionsA == 0)
+	{
+		result.first *= nan("");
+		return result;
 	}
 	if (nOfCollisionsA == nOfCollisionsB)
 	{
