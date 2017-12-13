@@ -46,7 +46,7 @@ struct spring
 
 // Constants
 const glm::vec3 acc_g = glm::vec3(0.0f, -9.8f, 0.0f);
-const float sleep_time = 0.4f;
+const float sleep_time = 0.2f;
 
 
 
@@ -219,7 +219,7 @@ int main()
 
 
 	std::vector<physicsObject> physicsObjects;
-	for (int i = 0; i < 10; i++)
+	for (int i = 0; i < 15; i++)
 	{
 		physicsObjects.push_back(physicsObject());
 		physicsObjects[i].rb = RigidBody();
@@ -227,8 +227,9 @@ int main()
 		physicsObjects[i].rb.getMesh().setShader(shader_green);
 		physicsObjects[i].rb.setMass(2.0f);
 		physicsObjects[i].rb.setCor(0.5f);
-		physicsObjects[i].rb.scale(glm::vec3(0.25f, 1.5f, 0.5f));
-		physicsObjects[i].rb.setPos(glm::vec3(-5.0f + (i * 0.8f), 1.5f, 0.0f));
+		physicsObjects[i].rb.scale(glm::vec3(0.25f, 1.5f, 0.7f));
+		physicsObjects[i].rb.setPos(glm::vec3(-5.0f + (i * 0.85f), 0.75f, 0.0f + (i * 0.25f)));
+		physicsObjects[i].rb.rotate((i * -0.1f), glm::vec3(0.0f, 1.0f, 0.0f));
 		physicsObjects[i].rb.addForce(new Gravity());
 		physicsObjects[i].bv = BoundingVolume(physicsObjects[0].rb.getPos(), physicsObjects[0].rb.getRotate()
 			, glm::vec3(physicsObjects[0].rb.getScale()[0][0], physicsObjects[0].rb.getScale()[1][1], physicsObjects[0].rb.getScale()[2][2]) / 2.0f);
@@ -313,34 +314,8 @@ int main()
 							float d = result.second;
 							if (pl[0][0] == pl[0][0])
 							{
-								if (glm::length2(physicsObjects[i].rb.getVel()) < 0.25f)
-								{
-									if (glm::length2(physicsObjects[i].rb.getAngVel()) < 0.25f)
-										physicsObjects[i].timer += dt;
-									physicsObjects[i].rb.setAngVel(physicsObjects[i].rb.getAngVel() * 0.98f);
-								}
-								else
-									physicsObjects[i].timer = 0.0f;
-								if (physicsObjects[i].timer >= sleep_time)
-									physicsObjects[i].asleep = true;
-								if (glm::length2(physicsObjects[i].rb.getVel()) < 0.25f)
-								{
-									if (glm::length2(physicsObjects[i].rb.getAngVel()) < 0.25f)
-										physicsObjects[i].timer += dt;
-									physicsObjects[i].rb.setAngVel(physicsObjects[i].rb.getAngVel() * 0.98f);
-								}
-								else
-									physicsObjects[i].timer = 0.0f;
-								if (physicsObjects[i].timer >= sleep_time)
-									physicsObjects[i].asleep = true;
-
-
 								physicsObjects[j].asleep = false;
-								debugParticle.setPos(pl[1]);
-								debugParticle1.setPos(pl[1] + pl[0]);
 								collisionResponse(physicsObjects[i].rb, physicsObjects[j].rb, pl, d, physicsObjects[i].timer);
-
-
 							}
 						}
 						else if (!physicsObjects[j].asleep)
@@ -350,34 +325,8 @@ int main()
 							float d = result.second;
 							if (pl[0][0] == pl[0][0])
 							{
-								if (glm::length2(physicsObjects[i].rb.getVel()) < 0.25f)
-								{
-									if (glm::length2(physicsObjects[i].rb.getAngVel()) < 0.25f)
-										physicsObjects[i].timer += dt;
-									physicsObjects[i].rb.setAngVel(physicsObjects[i].rb.getAngVel() * 0.98f);
-								}
-								else
-									physicsObjects[i].timer = 0.0f;
-								if (physicsObjects[i].timer >= sleep_time)
-									physicsObjects[i].asleep = true;
-								if (glm::length2(physicsObjects[i].rb.getVel()) < 0.25f)
-								{
-									if (glm::length2(physicsObjects[i].rb.getAngVel()) < 0.25f)
-										physicsObjects[i].timer += dt;
-									physicsObjects[i].rb.setAngVel(physicsObjects[i].rb.getAngVel() * 0.98f);
-								}
-								else
-									physicsObjects[i].timer = 0.0f;
-								if (physicsObjects[i].timer >= sleep_time)
-									physicsObjects[i].asleep = true;
-
-
 								physicsObjects[i].asleep = false;
-								debugParticle.setPos(pl[1]);
-								debugParticle1.setPos(pl[1] + pl[0]);
 								collisionResponse(physicsObjects[j].rb, physicsObjects[i].rb, pl, d, physicsObjects[j].timer);
-
-
 							}
 						}
 					}
@@ -390,9 +339,11 @@ int main()
 					continue;
 				if (glm::length2(p.rb.getVel()) < 0.16f)
 				{
-					if (glm::length2(p.rb.getAngVel()) < 0.25f)
+					if (glm::length2(p.rb.getAngVel()) < 0.64f)
 						p.timer += dt;
-					p.rb.setAngVel(p.rb.getAngVel() * 0.9f);
+					else
+						p.timer = 0.0f;
+					p.rb.setAngVel(p.rb.getAngVel() * 0.8f);
 				}
 				else
 					p.timer = 0.0f;
@@ -452,9 +403,9 @@ int main()
 		// draw particles
 		for (physicsObject p : physicsObjects)
 			app.draw(p.rb.getMesh());
-
+/*
 		app.draw(debugParticle.getMesh());
-		app.draw(debugParticle1.getMesh());
+		app.draw(debugParticle1.getMesh());*/
 		app.display();
 
 
