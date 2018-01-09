@@ -207,13 +207,13 @@ int main()
 	Mesh plane = Mesh::Mesh();
 	// scale it up x5
 	plane.scale(glm::vec3(5.0f, 5.0f, 5.0f));
-	plane.setShader(Shader("resources/shaders/physics.vert", "resources/shaders/physics.frag"));
+	plane.setShader(Shader("C:/Univeras/bitbucket/Physics/physics simulation/resources/shaders/physics.vert", "resources/shaders/physics.frag"));
 
 
 	// Make a shader to assign to particles
-	Shader shader_green = Shader("resources/shaders/physics.vert", "resources/shaders/physics_green.frag");
-	Shader shader_yellow = Shader("resources/shaders/core.vert", "resources/shaders/core_yellow.frag");
-	Shader shader_red = Shader("resources/shaders/core.vert", "resources/shaders/core_red.frag");
+	Shader shader_green = Shader("C:/Univeras/bitbucket/Physics/physics simulation/resources/shaders/physics.vert", "resources/shaders/physics_green.frag");
+	Shader shader_yellow = Shader("C:/Univeras/bitbucket/Physics/physics simulation/resources/shaders/core.vert", "resources/shaders/core_yellow.frag");
+	Shader shader_red = Shader("C:/Univeras/bitbucket/Physics/physics simulation/resources/shaders/core.vert", "resources/shaders/core_red.frag");
 
 
 	// Debug particle ///////////////////////////
@@ -224,7 +224,7 @@ int main()
 
 
 	std::vector<physicsObject> physicsObjects;
-	for (int i = 0; i < 15; i++)
+	for (int i = 0; i < 100; i++)
 	{
 		physicsObjects.push_back(physicsObject());
 		physicsObjects[i].rb = RigidBody();
@@ -234,7 +234,6 @@ int main()
 		physicsObjects[i].rb.setCor(0.5f);
 		physicsObjects[i].rb.scale(glm::vec3(0.25f, 1.5f, 0.7f));
 		physicsObjects[i].rb.setPos(glm::vec3(-5.0f + (i * 0.85f), 0.75f, 0.0f + (i * 0.25f)));
-		physicsObjects[i].rb.rotate((i * -0.1f), glm::vec3(0.0f, 1.0f, 0.0f));
 		physicsObjects[i].rb.addForce(new Gravity());
 		physicsObjects[i].bv = BoundingVolume(physicsObjects[i].rb.getPos(), physicsObjects[i].rb.getRotate()
 			, glm::vec3(physicsObjects[i].rb.getScale()[0][0], physicsObjects[i].rb.getScale()[1][1], physicsObjects[i].rb.getScale()[2][2]) / 2.0f);
